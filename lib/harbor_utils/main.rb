@@ -20,7 +20,7 @@ module HarborUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:keep_images], @args[:keep_days])
+      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:repository_name], @args[:keep_images], @args[:keep_days])
       puts "Running command #{Paint[@command, :yellow]}..."
     end
 
@@ -102,6 +102,14 @@ module HarborUtils
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
+          end
+        when "artifacts"
+          Optimist::options do
+            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
+            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :pass, "Password", type: :string, required: true, short: "-e"
+            opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
           end
         when "info"
           Optimist::options do

@@ -9,7 +9,7 @@ module HarborUtils
       @name = name
       @created = DateTime.parse(created)
       @artifact_count = artifact_count
-      @artifacts = Array.new
+      @artifacts = {}
     end
 
     def to_s

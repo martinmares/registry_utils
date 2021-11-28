@@ -6,15 +6,17 @@ module HarborUtils
   require_relative "utils"
   require_relative "project"
   require_relative "repository"
+  require_relative "artifact"
 
   PAGE_SIZE = 10
   class Api
 
     attr_reader :projects
 
-    def initialize(url, user, pass, project_name, keep_images, keep_days)
+    def initialize(url, user, pass, project_name, repository_name, keep_images, keep_days)
       @client = HarborUtils::Client.new(url, user, pass)
       @project_name = project_name
+      @repository_name = repository_name
       @keep_images = keep_images
       @keep_days = keep_days
       @api_path = "api/v2.0"
@@ -37,6 +39,11 @@ module HarborUtils
       "#{@api_path}/projects/#{project_name}/repositories"
     end
 
+    def list_of_artifacts_endpoint(project_name, repository_name)
+      repo = repository_name.gsub("/", "%252F")
+      "#{@api_path}/projects/#{project_name}/repositories/#{repo}/artifacts"
+    end
+
     def healthy?(status)
       status.downcase.start_with?("health")
     end
@@ -55,9 +62,15 @@ module HarborUtils
       when :info
         call_info()
       when :cleanup
-        call_cleanup()
+        api_projects()
+        api_repositories(@project_name)
+        #print_repositories(@project_name)
+        api_cleanup(@project_name, @repository_name)
       when :artifacts
-        call_artifacts()
+        api_projects()
+        api_repositories(@project_name)
+        api_artifacts(@project_name, @repository_name)
+        print_artifacts(@project_name, @repository_name)
       end
     end
 
@@ -142,13 +155,13 @@ module HarborUtils
         response = @client.get(list_of_repositories_endpoint(project_name), { page_size: PAGE_SIZE })
         status, body = Utils::parse_response(response)
         if @client.ok?(status)
-          api_list_of_repositories(body, 1, repos)
+          api_list_of_repositories(body, 1, project_name, repos)
           cnt = total_count(response)
           if cnt > 0
             1.upto(cnt) do |page_no|
               response = @client.get(list_of_repositories_endpoint(project_name), { page: (page_no + 1), page_size: PAGE_SIZE })
               status, body = Utils::parse_response(response)
-              api_list_of_repositories(body, (page_no + 1), repos)
+              api_list_of_repositories(body, (page_no + 1), project_name, repos)
             end
           end
         end
@@ -158,10 +171,11 @@ module HarborUtils
       end
     end
 
-    def api_list_of_repositories(body, page_no, repos)
+    def api_list_of_repositories(body, page_no, project_name, repos)
       if body.is_a?(Array)
         body.each_with_index do |repository, i|
-          repos[repository["name"]] = Repository.new(repository["id"], repository["name"], repository["creation_time"], repository["artifact_count"])
+          repo_name = repository["name"].gsub("#{project_name}/", "")
+          repos[repo_name] = Repository.new(repository["id"], repo_name, repository["creation_time"], repository["artifact_count"])
         end
       end
     end
@@ -174,6 +188,67 @@ module HarborUtils
         repos.each do |name, repo|
           puts repo
         end  
+      end
+    end
+
+    def api_artifacts(project_name, repository_name)
+      artifacts = {}
+      if @projects.has_key? project_name
+
+        project = @projects[project_name]
+        repos = project.repositories
+
+        # puts "Find project #{Paint[project, :cyan]}"
+        
+        if repos.has_key? repository_name
+
+          # puts "Find repo #{Paint[repos[repository_name], :cyan]}"
+          
+          response = @client.get(list_of_artifacts_endpoint(project_name, repository_name), { page_size: PAGE_SIZE, with_tag: true, with_signatures: true })
+          status, body = Utils::parse_response(response)
+          if @client.ok?(status)
+            api_list_of_artifacts(body, 1, project_name, repository_name, artifacts)
+            cnt = total_count(response)
+            if cnt > 0
+              1.upto(cnt) do |page_no|
+                response = @client.get(list_of_artifacts_endpoint(project_name, repository_name), { page: (page_no + 1), page_size: PAGE_SIZE, with_tag: true, with_signatures: true })
+                status, body = Utils::parse_response(response)
+                api_list_of_artifacts(body, (page_no + 1), project_name, repository_name, artifacts)
+              end
+            end
+          end
+
+          repos[repository_name].artifacts = artifacts
+
+        else
+          puts "Repo with name #{Paint[repository_name, :cyan]} not found!"
+        end
+      end
+    end
+
+    def api_list_of_artifacts(body, page_no, project_name, repository_name, artifacts)
+      if body.is_a?(Array)
+        body.each_with_index do |artifact, i|
+          artifacts[artifact["digest"]] = Artifact.new(artifact["id"], artifact["digest"], artifact["push_time"], artifact["pull_time"], artifact["size"])
+        end
+      end
+    end
+
+    def print_artifacts(project_name, repository_name)
+      if @projects.has_key? project_name
+
+        project = @projects[project_name]
+        repos = project.repositories
+
+        if repos.has_key? repository_name
+          artifacts = repos[repository_name].artifacts.sort_by { |(k, v)| v.id }
+          puts "Project with name: #{Paint[project_name, :cyan]}"
+          puts "Repo with name: #{Paint[repository_name, :cyan]}"
+          puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
+          artifacts.each do |name, artifact|
+            puts artifact
+          end  
+        end
       end
     end
 
