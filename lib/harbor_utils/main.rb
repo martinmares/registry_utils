@@ -11,10 +11,12 @@ module HarborUtils
 
     CMD_HEALTH = "health"
     CMD_PROJECTS = "projects"
+    CMD_REPOSITORIES = "repositories"
+    CMD_ARTIFACTS = "artifacts"
     CMD_INFO = "info"
     CMD_CLEANUP = "cleanup"
 
-    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_INFO, CMD_HEALTH]
+    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_INFO, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS]
 
     def initialize()
       @command, @global_args, @args = parse_args()
@@ -42,6 +44,14 @@ module HarborUtils
       @command == CMD_CLEANUP
     end
 
+    def cmd_repositories?
+      @command == CMD_REPOSITORIES
+    end
+
+    def cmd_artifacts?
+      @command == CMD_ARTIFACTS
+    end
+
     def run
       if cmd_health?
         @api.call(:health)
@@ -51,6 +61,10 @@ module HarborUtils
         @api.call(:info)
       elsif cmd_cleanup?
         @api.call(:cleanup)
+      elsif cmd_repositories?
+        @api.call(:repositories)
+      elsif cmd_artifacts?
+        @api.call(:artifacts)
       end
     end
 
@@ -79,6 +93,13 @@ module HarborUtils
             opt :url, "Harbor URL", type: :string, required: true, short: "-u"
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
+          end
+        when "repositories"
+          Optimist::options do
+            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
+            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :pass, "Password", type: :string, required: true, short: "-e"
+            opt :project_name, "Project name", type: :string, required: true, short: "-p"
           end
         when "info"
           Optimist::options do

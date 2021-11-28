@@ -31,6 +31,10 @@ module HarborUtils
       "#{@api_path}/projects"
     end
 
+    def list_of_repositories_endpoint(project_name)
+      "#{@api_path}/projects/#{project_name}/repositories"
+    end
+
     def healthy?(status)
       status.downcase.start_with?("health")
     end
@@ -43,6 +47,12 @@ module HarborUtils
         call_projects()
       when :info
         call_info()
+      when :cleanup
+        call_cleanup()
+      when :repositories
+        call_repositories()
+      when :artifacts
+        call_artifacts()
       end
     end
 
@@ -79,12 +89,8 @@ module HarborUtils
     end
 
     def call_projects
-        if @project_name
-          puts "For project #{Paint[@project_name, :yellow]}"
-        else
-          puts "Project list:"
-          call_list_of_projects()
-        end
+      puts "Project list:"
+      call_list_of_projects()
     end
 
     def total_count(response)
@@ -107,7 +113,7 @@ module HarborUtils
           1.upto(cnt) do |page_no|
             response = @client.get(list_of_projects_endpoint, { page: (page_no + 1), page_size: PAGE_SIZE })
             status, body = Utils::parse_response(response)
-            print_list_of_projects(body, (page_no + 1))      
+            print_list_of_projects(body, (page_no + 1))
           end
         end
       end
@@ -121,6 +127,41 @@ module HarborUtils
           created = "#{dt.year}-#{dt.month}-#{dt.day}"
           tago = distance_of_time_in_words(Time.now, dt)
           puts "[#{idx}] #{Paint[project["name"], :cyan]} => id: #{Paint[project["project_id"], :green]}, created: #{Paint[created, :yellow]} (#{tago}), repos: #{Paint[project["repo_count"], :green]}"
+        end
+      end
+    end
+
+    def call_repositories
+      if @project_name
+        puts "For project #{Paint[@project_name, :yellow]}"
+        call_list_of_repositories(@project_name)
+      end
+    end
+
+    def call_list_of_repositories(project_name)
+      response = @client.get(list_of_repositories_endpoint(project_name), { page_size: PAGE_SIZE })
+      status, body = Utils::parse_response(response)
+      if @client.ok?(status)
+        print_list_of_repositories(body, 1)
+        cnt = total_count(response)
+        if cnt > 0
+          1.upto(cnt) do |page_no|
+            response = @client.get(list_of_repositories_endpoint(project_name), { page: (page_no + 1), page_size: PAGE_SIZE })
+            status, body = Utils::parse_response(response)
+            print_list_of_repositories(body, (page_no + 1))
+          end
+        end
+      end
+    end
+
+    def print_list_of_repositories(body, page_no)
+      if body.is_a?(Array)
+        body.each_with_index do |repository, i|
+          idx = (((page_no-1) * PAGE_SIZE) + i + 1).to_s.rjust(3, ' ')
+          dt = DateTime.parse(repository["creation_time"])
+          created = "#{dt.year}-#{dt.month}-#{dt.day}"
+          tago = distance_of_time_in_words(Time.now, dt)
+          puts "[#{idx}] #{Paint[repository["name"], :cyan]} => id: #{Paint[repository["id"], :green]}, created: #{Paint[created, :yellow]} (#{tago}), artifacts: #{Paint[repository["artifact_count"], :green]}"
         end
       end
     end
