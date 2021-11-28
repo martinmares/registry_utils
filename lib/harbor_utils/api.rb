@@ -2,11 +2,14 @@ module HarborUtils
 
   require "awesome_print"
   require "paint"
+  require "action_view"
   require_relative "client"
   require_relative "utils"
 
   PAGE_SIZE = 10
   class Api
+
+    include ActionView::Helpers::DateHelper
 
     def initialize(url, user, pass, project_name, keep_images, keep_days)
       @client = HarborUtils::Client.new(url, user, pass)
@@ -114,7 +117,10 @@ module HarborUtils
       if body.is_a?(Array)
         body.each_with_index do |project, i|
           idx = (((page_no-1) * PAGE_SIZE) + i + 1).to_s.rjust(3, ' ')
-          puts " ==> [#{idx}] #{Paint[project["name"], :cyan]}, created: #{Paint[project["creation_time"], :yellow]}, id: #{Paint[project["project_id"], :green]}, repos: #{Paint[project["repo_count"], :green]}"
+          dt = DateTime.parse(project["creation_time"])
+          created = "#{dt.year}-#{dt.month}-#{dt.day}"
+          tago = distance_of_time_in_words(Time.now, dt)
+          puts "[#{idx}] #{Paint[project["name"], :cyan]} => id: #{Paint[project["project_id"], :green]}, created: #{Paint[created, :yellow]} (#{tago}), repos: #{Paint[project["repo_count"], :green]}"
         end
       end
     end

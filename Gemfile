@@ -7,3 +7,5 @@ gem "optimist"
 gem "fileutils"
 gem "paint"
 gem "faraday"
+gem "action_view"
+
