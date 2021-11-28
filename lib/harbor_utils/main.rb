@@ -102,6 +102,7 @@ module HarborUtils
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
           end
         when "artifacts"
           Optimist::options do

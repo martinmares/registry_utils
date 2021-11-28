@@ -35,8 +35,12 @@ module HarborUtils
       "#{@api_path}/projects"
     end
 
-    def list_of_repositories_endpoint(project_name)
-      "#{@api_path}/projects/#{project_name}/repositories"
+    def list_of_repositories_endpoint(project_name, repository_name = nil)
+      if repository_name
+        "#{@api_path}/projects/#{project_name}/repositories/#{repository_name}"
+      else
+        "#{@api_path}/projects/#{project_name}/repositories"
+      end
     end
 
     def list_of_artifacts_endpoint(project_name, repository_name)
@@ -57,18 +61,19 @@ module HarborUtils
         print_projects()
       when :repositories
         api_projects()
-        api_repositories(@project_name)
-        print_repositories(@project_name)
+        api_repositories(@project_name, @repository_name)
+        print_repositories(@project_name, @repository_name)
       when :info
         call_info()
       when :cleanup
         api_projects()
-        api_repositories(@project_name)
+        api_repositories(@project_name, @repository_name)
+        api_artifacts(@project_name, @repository_name)
         #print_repositories(@project_name)
         api_cleanup(@project_name, @repository_name)
       when :artifacts
         api_projects()
-        api_repositories(@project_name)
+        api_repositories(@project_name, @repository_name)
         api_artifacts(@project_name, @repository_name)
         print_artifacts(@project_name, @repository_name)
       end
@@ -149,17 +154,17 @@ module HarborUtils
       end
     end
 
-    def api_repositories(project_name)
+    def api_repositories(project_name, repository_name = nil)
       if @projects.has_key? project_name
         repos = {}
-        response = @client.get(list_of_repositories_endpoint(project_name), { page_size: PAGE_SIZE })
+        response = @client.get(list_of_repositories_endpoint(project_name, repository_name), { page_size: PAGE_SIZE })
         status, body = Utils::parse_response(response)
         if @client.ok?(status)
           api_list_of_repositories(body, 1, project_name, repos)
           cnt = total_count(response)
           if cnt > 0
             1.upto(cnt) do |page_no|
-              response = @client.get(list_of_repositories_endpoint(project_name), { page: (page_no + 1), page_size: PAGE_SIZE })
+              response = @client.get(list_of_repositories_endpoint(project_name, repository_name), { page: (page_no + 1), page_size: PAGE_SIZE })
               status, body = Utils::parse_response(response)
               api_list_of_repositories(body, (page_no + 1), project_name, repos)
             end
@@ -177,10 +182,14 @@ module HarborUtils
           repo_name = repository["name"].gsub("#{project_name}/", "")
           repos[repo_name] = Repository.new(repository["id"], repo_name, repository["creation_time"], repository["artifact_count"])
         end
+      elsif body.is_a?(Hash)
+        repository = body
+        repo_name = repository["name"].gsub("#{project_name}/", "")
+        repos[repo_name] = Repository.new(repository["id"], repo_name, repository["creation_time"], repository["artifact_count"])
       end
     end
 
-    def print_repositories(project_name)
+    def print_repositories(project_name, repository_name = nil)
       if @projects.has_key? project_name
         repos = @projects[project_name].repositories.sort_by { |(k, v)| v.id }
         puts "Project with name: #{Paint[project_name, :cyan]}"
