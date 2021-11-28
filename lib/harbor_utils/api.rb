@@ -7,8 +7,11 @@ module HarborUtils
 
   class Api
 
-    def initialize(url, user, pass)
+    def initialize(url, user, pass, project_name, keep_images, keep_days)
       @client = HarborUtils::Client.new(url, user, pass)
+      @project_name = project_name
+      @keep_images = keep_images
+      @keep_days = keep_days
       @api_path = "api/v2.0"
     end
 
@@ -20,11 +23,26 @@ module HarborUtils
       "#{@api_path}/health"
     end
 
+    def list_of_projects_endpoint
+      "#{@api_path}/projects?page_size=100"
+    end
+
     def healthy?(status)
       status.downcase.start_with?("health")
     end
 
-    def health
+    def call(what)
+      case what
+      when :health
+        call_health()
+      when :stats
+        call_stats()
+      end
+    end
+
+    private
+
+    def call_health
       response = @client.get health_endpoint
       status, body = Utils::parse_response(response)
       if @client.ok?(status)
@@ -46,13 +64,37 @@ module HarborUtils
       end
     end
 
-    private
-
     def print_component_health(name, status)
       if healthy?(status)
         puts "  ==> #{Paint[name, :yellow]} is #{Paint["healthy!", :green]}"
       else
-        puts "  ==> component #{Paint[name, :yellow]} is #{Paint["unhealthy!", :red]}"
+        puts "  ==> #{Paint[name, :yellow]} is #{Paint["unhealthy!", :red]}"
+      end
+    end
+
+    def call_stats
+        if @project_name
+          puts "For project #{Paint[@project_name, :yellow]}"
+        else
+          puts "Project list:"
+          call_list_of_projects()
+        end
+    end
+
+    def call_list_of_projects
+      response = @client.get list_of_projects_endpoint
+      status, body = Utils::parse_response(response)
+      if @client.ok?(status)
+        print_list_of_projects(body)
+      end
+    end
+
+    def print_list_of_projects(body)
+      if body.is_a?(Array)
+        body.each do |project|
+          # name, project_id, creation_time, repo_count
+          puts " ==> #{Paint[project["name"], :cyan]}, created: #{Paint[project["creation_time"], :yellow]}, id: #{Paint[project["project_id"], :green]}, repos: #{Paint[project["repo_count"], :green]}"
+        end
       end
     end
 

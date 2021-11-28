@@ -17,7 +17,7 @@ module HarborUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @api = Api.new(@args[:url], @args[:user], @args[:password])
+      @api = Api.new(@args[:url], @args[:user], @args[:password], @args[:project_name], @args[:keep_images], @args[:keep_days])
       puts "Running command #{Paint[@command, :yellow]}..."
     end
 
@@ -39,7 +39,9 @@ module HarborUtils
 
     def run
       if cmd_health?
-        @api.health()
+        @api.call(:health)
+      elsif cmd_stats?
+        @api.call(:stats)
       end
     end
 
@@ -68,7 +70,7 @@ module HarborUtils
             opt :url, "Harbor URL", type: :string, required: true, short: "-u"
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :project_name, "Project name", type: :string, required: false, short: "-p"
           end
         when "health"
           Optimist::options do
