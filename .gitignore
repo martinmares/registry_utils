@@ -1,0 +1,15 @@
+.hg
+.hgtags
+.idea
+.DS_Store
+.lsp
+.clj-kondo
+.vscode
+
+# include
+conf/*
+
+# exclude
+# exclude
+!conf/.gitkeep
+

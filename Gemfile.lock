@@ -1,0 +1,23 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    awesome_print (1.9.2)
+    fileutils (1.6.0)
+    json (2.6.1)
+    optimist (3.0.1)
+    paint (2.2.1)
+    ruby-progressbar (1.11.0)
+
+PLATFORMS
+  x86_64-darwin-20
+
+DEPENDENCIES
+  awesome_print
+  fileutils
+  json
+  optimist
+  paint
+  ruby-progressbar
+
+BUNDLED WITH
+   2.2.32
