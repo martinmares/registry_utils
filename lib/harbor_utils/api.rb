@@ -136,8 +136,8 @@ module HarborUtils
     def print_projects
       puts "Number of projects: #{Paint[@projects.size, :green]}"
       projects = @projects.sort_by { |(k, v)| v.id }
-      projects.each do |name, project|
-        puts project
+      projects.each_with_index do |(name, project), i|
+        puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{project}"
       end
     end
 
@@ -185,8 +185,8 @@ module HarborUtils
         repos = @projects[project_name].repositories.sort_by { |(k, v)| v.id }
         puts "Project with name: #{Paint[project_name, :cyan]}"
         puts "Number of repositories: #{Paint[repos.size, :green]}"
-        repos.each do |name, repo|
-          puts repo
+        repos.each_with_index do |(name, repo), i|
+          puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{repo}"
         end  
       end
     end
@@ -245,8 +245,8 @@ module HarborUtils
           puts "Project with name: #{Paint[project_name, :cyan]}"
           puts "Repo with name: #{Paint[repository_name, :cyan]}"
           puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
-          artifacts.each do |name, artifact|
-            puts artifact
+          artifacts.each_with_index do |(digest, artifact), i|
+            puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
           end  
         end
       end
