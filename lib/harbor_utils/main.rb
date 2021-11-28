@@ -18,7 +18,7 @@ module HarborUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @api = Api.new(@args[:url], @args[:user], @args[:password], @args[:project_name], @args[:keep_images], @args[:keep_days])
+      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:keep_images], @args[:keep_days])
       puts "Running command #{Paint[@command, :yellow]}..."
     end
 
