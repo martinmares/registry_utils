@@ -85,6 +85,8 @@ module HarborUtils
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
+            opt :all_repos, "If specifily `all-repos=true`, cleanup rule will be applied on all repos for this project", type: :boolean, require: false, short: "-a"
             opt :keep_images, "Keep last `i` images", type: :integer, required: false, short: "-i"
             opt :keep_days, "Keep only images created before today-`d` days", type: :integer, required: false, short: "-d"
           end
