@@ -10,10 +10,11 @@ module HarborUtils
     require_relative "api"
 
     CMD_HEALTH = "health"
-    CMD_STATS = "stats"
+    CMD_PROJECTS = "projects"
+    CMD_INFO = "info"
     CMD_CLEANUP = "cleanup"
 
-    SUB_COMMANDS = [CMD_CLEANUP, CMD_STATS, CMD_HEALTH]
+    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_INFO, CMD_HEALTH]
 
     def initialize()
       @command, @global_args, @args = parse_args()
@@ -29,8 +30,12 @@ module HarborUtils
       @command == CMD_HEALTH
     end
 
-    def cmd_stats?
-      @command == CMD_STATS
+    def cmd_projects?
+      @command == CMD_PROJECTS
+    end
+
+    def cmd_info?
+      @command == CMD_INFO
     end
 
     def cmd_cleanup?
@@ -40,8 +45,12 @@ module HarborUtils
     def run
       if cmd_health?
         @api.call(:health)
-      elsif cmd_stats?
-        @api.call(:stats)
+      elsif cmd_projects?
+        @api.call(:projects)
+      elsif cmd_info?
+        @api.call(:info)
+      elsif cmd_cleanup?
+        @api.call(:cleanup)
       end
     end
 
@@ -49,7 +58,7 @@ module HarborUtils
 
     def parse_args
       global_opts = Optimist::options do
-        banner "Harbor utility, possible commands are: `health`, `stats`, `cleanup`"
+        banner "Harbor utility, possible commands are: #{SUB_COMMANDS}"
         opt :debug, "Debug?", type: :boolean, default: false
         stop_on SUB_COMMANDS
       end
@@ -65,12 +74,18 @@ module HarborUtils
             opt :keep_images, "Keep last `i` images", type: :integer, required: false, short: "-i"
             opt :keep_days, "Keep only images created before today-`d` days", type: :integer, required: false, short: "-d"
           end
-        when "stats"
+        when "projects"
           Optimist::options do
             opt :url, "Harbor URL", type: :string, required: true, short: "-u"
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: false, short: "-p"
+          end
+        when "info"
+          Optimist::options do
+            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
+            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :pass, "Password", type: :string, required: true, short: "-e"
+            opt :project_name, "Project name", type: :string, required: true, short: "-p"
           end
         when "health"
           Optimist::options do

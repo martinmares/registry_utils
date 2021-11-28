@@ -35,8 +35,8 @@ module HarborUtils
       case what
       when :health
         call_health()
-      when :stats
-        call_stats()
+      when :projects
+        call_projects()
       end
     end
 
@@ -72,7 +72,7 @@ module HarborUtils
       end
     end
 
-    def call_stats
+    def call_projects
         if @project_name
           puts "For project #{Paint[@project_name, :yellow]}"
         else
