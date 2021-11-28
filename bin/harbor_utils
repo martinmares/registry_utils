@@ -2,8 +2,8 @@
 
 require_relative "../lib/harbor_utils/main"
 
-harbor = HarborUtils::Main.new
-puts harbor
+main = HarborUtils::Main.new
+main.run()
 
 =begin
 
