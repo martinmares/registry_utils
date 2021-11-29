@@ -1,5 +1,4 @@
 module HarborUtils
-
   class Main
 
     attr_reader :args, :command

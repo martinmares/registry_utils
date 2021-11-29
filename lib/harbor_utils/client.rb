@@ -19,6 +19,7 @@ module HarborUtils
                   "User-Agent" => "Ruby (Faraday client); HarborUtils module",
                   "Authorization" => basic_auth}
       )
+      puts "Connected to: #{url}, as user: #{user}"
     end
 
     def get(url, params = nil, headers = nil)

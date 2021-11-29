@@ -155,6 +155,8 @@ module HarborUtils
             api_projects_page(body, (page_no + 1))
           end
         end
+      else
+        puts "Something wrong (api_projects) => status: #{response.status}, body: #{response.body}"
       end
     end
 
@@ -189,6 +191,8 @@ module HarborUtils
               api_list_of_repositories(body, (page_no + 1), project_name, repos)
             end
           end
+        else
+          puts "Something wrong (api_repositories) => status: #{response.status}, body: #{response.body}"
         end
         @projects[project_name].repositories = repos
       else
@@ -241,6 +245,8 @@ module HarborUtils
                 api_list_of_artifacts(body, (page_no + 1), project_name, repository_name, artifacts)
               end
             end
+          else
+            puts "Something wrong (api_artifacts) => status: #{response.status}, body: #{response.body}"
           end
 
           repos[repository_name].artifacts = artifacts
@@ -301,6 +307,8 @@ module HarborUtils
               response = @client.delete(delete_artifact(project_name, repository_name, artifact.digest))
               if @client.ok?(response.status)
                 puts "      => artifact #{Paint[artifact.digest, :green]} successfully deleted!"
+              else
+                puts "Something wrong (api_cleanup) => status: #{response.status}, body: #{response.body}"
               end
             end
           end
