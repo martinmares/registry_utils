@@ -13,12 +13,11 @@ module HarborUtils
 
     attr_reader :projects
 
-    def initialize(url, user, pass, project_name, repository_name, keep_images, keep_days)
+    def initialize(url, user, pass, project_name, repository_name, keep_last_n)
       @client = HarborUtils::Client.new(url, user, pass)
       @project_name = project_name
       @repository_name = repository_name
-      @keep_images = keep_images
-      @keep_days = keep_days
+      @keep_last_n = keep_last_n
       @api_path = "api/v2.0"
       @projects = {}
     end
@@ -48,6 +47,12 @@ module HarborUtils
       "#{@api_path}/projects/#{project_name}/repositories/#{repo}/artifacts"
     end
 
+    def delete_artifact(project_name, repository_name, digest)
+      repo = repository_name.gsub("/", "%252F")
+      reference = digest.gsub(":", "%3A")
+      "#{@api_path}/projects/#{project_name}/repositories/#{repo}/artifacts/#{reference}"
+    end
+
     def healthy?(status)
       status.downcase.start_with?("health")
     end
@@ -56,6 +61,7 @@ module HarborUtils
       case what
       when :health
         api_health()
+        print_health()
       when :projects
         api_projects()
         print_projects()
@@ -85,19 +91,23 @@ module HarborUtils
       response = @client.get(health_endpoint)
       status, body = Utils::parse_response(response)
       if @client.ok?(status)
-        if healthy?(body["status"])
-          puts "Harbor is #{Paint["healthy!", :green]}"
-        else
-          puts "Harbor is #{Paint["unhealthy!", :red]}"
-        end
-        print_health_of_components(body)
+        @health = body
       end
     end
 
-    def print_health_of_components(body)
-      if body.has_key? "components"
+    def print_health
+      if healthy?(@health["status"])
+        puts "Harbor is #{Paint["healthy!", :green]}"
+      else
+        puts "Harbor is #{Paint["unhealthy!", :red]}"
+      end
+      print_health_of_components(@health)
+    end
+
+    def print_health_of_components(health)
+      if health.has_key? "components"
         puts "Status of each component:"
-        body["components"].each do |component|
+        health["components"].each do |component|
           print_component_health(component["name"], component["status"])
         end
       end
@@ -196,7 +206,7 @@ module HarborUtils
         puts "Number of repositories: #{Paint[repos.size, :green]}"
         repos.each_with_index do |(name, repo), i|
           puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{repo}"
-        end  
+        end
       end
     end
 
@@ -208,11 +218,11 @@ module HarborUtils
         repos = project.repositories
 
         # puts "Find project #{Paint[project, :cyan]}"
-        
+
         if repos.has_key? repository_name
 
           # puts "Find repo #{Paint[repos[repository_name], :cyan]}"
-          
+
           response = @client.get(list_of_artifacts_endpoint(project_name, repository_name), { page_size: PAGE_SIZE, with_tag: true, with_signatures: true })
           status, body = Utils::parse_response(response)
           if @client.ok?(status)
@@ -238,7 +248,7 @@ module HarborUtils
     def api_list_of_artifacts(body, page_no, project_name, repository_name, artifacts)
       if body.is_a?(Array)
         body.each_with_index do |artifact, i|
-          artifacts[artifact["digest"]] = Artifact.new(artifact["id"], artifact["digest"], artifact["push_time"], artifact["pull_time"], artifact["size"])
+          artifacts[artifact["id"].to_i] = Artifact.new(artifact["id"], artifact["digest"], artifact["push_time"], artifact["pull_time"], artifact["size"])
         end
       end
     end
@@ -254,11 +264,46 @@ module HarborUtils
           puts "Project with name: #{Paint[project_name, :cyan]}"
           puts "Repo with name: #{Paint[repository_name, :cyan]}"
           puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
-          artifacts.each_with_index do |(digest, artifact), i|
+          artifacts.each_with_index do |(id, artifact), i|
             puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
-          end  
+          end
         end
       end
+    end
+
+    def api_cleanup(project_name, repository_name)
+      # %3A
+      # sha256:cc7445a814af2bb64782a4fbd8f75d6199e38cfde6dc95c78622655c5f7cd7ad
+      if @projects.has_key? project_name
+
+        project = @projects[project_name]
+        repos = project.repositories
+
+        if repos.has_key? repository_name
+          artifacts = repos[repository_name].artifacts.sort_by { |(k, v)| v.id }
+          puts "Project with name: #{Paint[project_name, :cyan]}"
+          puts "Repo with name: #{Paint[repository_name, :cyan]}"
+          puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
+          keep_ids = artifacts.map { |id, artifact| artifact.id }.to_a.sort { |a, b| b <=> a }.take(@keep_last_n)
+          keep = {}
+          keep_ids.each do |id|
+            keep[id] = id
+          end
+
+          artifacts.each_with_index do |(id, artifact), i|
+            if keep.has_key?(id)
+              puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["KEEP  ", :green]} #{artifact}"
+            else
+              puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE", :red]} #{artifact}"
+              response = @client.delete(delete_artifact(project_name, repository_name, artifact.digest))
+              if @client.ok?(response.status)
+                puts "      => artifact #{Paint[artifact.digest, :green]} successfully deleted!"
+              end
+            end
+          end
+        end
+      end
+
     end
 
   end

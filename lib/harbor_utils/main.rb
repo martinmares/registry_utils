@@ -20,7 +20,7 @@ module HarborUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:repository_name], @args[:keep_images], @args[:keep_days])
+      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:repository_name], @args[:keep_last_n])
       puts "Running command #{Paint[@command, :yellow]}..."
     end
 
@@ -85,10 +85,8 @@ module HarborUtils
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
-            opt :all_repos, "If specifily `all-repos=true`, cleanup rule will be applied on all repos for this project", type: :boolean, require: false, short: "-a"
-            opt :keep_images, "Keep last `i` images", type: :integer, required: false, short: "-i"
-            opt :keep_days, "Keep only images created before today-`d` days", type: :integer, required: false, short: "-d"
+            opt :repository_name, "Repository name", type: :string, required: true, short: "-r"
+            opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
           end
         when "projects"
           Optimist::options do
