@@ -4,32 +4,3 @@ require_relative "../lib/harbor_utils/main"
 
 main = HarborUtils::Main.new
 main.run()
-
-=begin
-
-  $ ./bin/harbor_utils cleanup -h
-
-  Options:
-    -u, --uri-api=<s>         Harbor API URI
-    -p, --project-name=<s>    Project name
-    -i, --keep-images=<i>     Keep last `i` images
-    -d, --keep-days=<i>       Keep only images created before today-`d` days
-    -e, --debug               Debug?
-    -h, --help                Show this message
-
-    
-    $ ./bin/harbor_utils health -h
-
-    Options:
-      -u, --uri-api=<s>    Harbor API URI
-      -h, --help           Show this message
-
-
-    $ ./bin/harbor_utils stats -h
-
-    Options:
-      -u, --uri-api=<s>         Harbor API URI
-      -p, --project-name=<s>    Project name
-      -h, --help                Show this message
-
-=end

@@ -2,6 +2,7 @@ module HarborUtils
 
   require "awesome_print"
   require "paint"
+  require "highline/import"
   require_relative "client"
   require_relative "utils"
   require_relative "project"
@@ -69,22 +70,21 @@ module HarborUtils
         api_projects()
         api_repositories(@project_name, @repository_name)
         print_repositories(@project_name, @repository_name)
-      when :info
-        call_info()
       when :cleanup
         api_projects()
         api_repositories(@project_name, @repository_name)
         if Utils::blank? @repository_name
-          @projects[@project_name].repositories.each do |name, repo|
-            api_artifacts(@project_name, repo.name)
-            #print_repositories(@project_name, repo.name)
-            #print_artifacts(@project_name, repo.name)
-            api_cleanup(@project_name, repo.name)
+          confirm = ask("No repository is defined, so it must be explicitly acknowledged.\nThe delete operation applies to all repositories in the project!.\nDo you really want to run it? [Y/N] ") { |yn| yn.limit = 1, yn.validate = /[yn]/i }
+          if confirm.downcase[0] == 'y'
+            @projects[@project_name].repositories.each do |name, repo|
+              api_artifacts(@project_name, repo.name)
+              api_cleanup(@project_name, repo.name)
+            end
+          else
+            puts "Nothing to do."
           end
         else
           api_artifacts(@project_name, @repository_name)
-          #print_repositories(@project_name, @repository_name)
-          #print_artifacts(@project_name, @repository_name)
           api_cleanup(@project_name, @repository_name)
         end
       when :artifacts
@@ -227,11 +227,7 @@ module HarborUtils
         project = @projects[project_name]
         repos = project.repositories
 
-        # puts "Find project #{Paint[project, :cyan]}"
-
         if repos.has_key? repository_name
-
-          # puts "Find repo #{Paint[repos[repository_name], :cyan]}"
 
           response = @client.get(list_of_artifacts_endpoint(project_name, repository_name), { page_size: PAGE_SIZE, with_tag: true, with_signatures: true })
           status, body = Utils::parse_response(response)
@@ -271,7 +267,6 @@ module HarborUtils
 
         if repos.has_key? repository_name
           artifacts = repos[repository_name].artifacts.sort_by { |(k, v)| v.id }
-          # puts "Project with name: #{Paint[project_name, :cyan]}"
           puts "Repo with name: #{Paint[repository_name, :cyan]}"
           puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
           artifacts.each_with_index do |(id, artifact), i|
@@ -282,8 +277,6 @@ module HarborUtils
     end
 
     def api_cleanup(project_name, repository_name)
-      # %3A
-      # sha256:cc7445a814af2bb64782a4fbd8f75d6199e38cfde6dc95c78622655c5f7cd7ad
       if @projects.has_key? project_name
 
         project = @projects[project_name]
@@ -319,19 +312,3 @@ module HarborUtils
   end
 
 end
-
-=begin
-
-GET repositories:
-
-curl -X GET "https://registry.datalite.cz/api/v2.0/projects/tsm-cetin-release/repositories?page=1&page_size=10"
-  -H  "accept: application/json"
-  -H  "authorization: Basic ..."
-
-response:
-  x-total-count: 41
-
-GET projects:
-
-
-=end

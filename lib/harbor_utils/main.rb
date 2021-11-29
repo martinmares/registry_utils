@@ -13,15 +13,14 @@ module HarborUtils
     CMD_PROJECTS = "projects"
     CMD_REPOSITORIES = "repositories"
     CMD_ARTIFACTS = "artifacts"
-    CMD_INFO = "info"
     CMD_CLEANUP = "cleanup"
 
-    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_INFO, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS]
+    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS]
 
     def initialize()
       @command, @global_args, @args = parse_args()
       @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:repository_name], @args[:keep_last_n])
-      puts "Running command #{Paint[@command, :yellow]}..."
+      puts "Running command #{Paint[@command, :yellow]} ..."
     end
 
     def health
@@ -110,13 +109,6 @@ module HarborUtils
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
             opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
           end
-        when "info"
-          Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
-          end
         when "health"
           Optimist::options do
             opt :url, "Harbor URL", type: :string, required: true, short: "-u"
@@ -128,34 +120,6 @@ module HarborUtils
         end
 
         [subcommand, global_opts, opts]
-
-=begin
-        global_opts = Optimist::options do
-          banner "Harbor utility, can show Harbor `health` or some project `stats` or `cleanup` resources (containers)."
-          opt :debug, "Debug?", type: :boolean, default: false  
-          stop_on SUB_COMMANDS
-        end
-
-        cmd = ARGV.shift # get the subcommand
-        cmd_opts = case cmd
-          when "delete" # parse delete options
-            Optimist::options do
-              opt :force, "Force deletion"
-              opt :url, "Harbor URL", type: :string, required: true #, short: "-u"
-              opt :user_name, "User name", type: :string, required: true #, short: "-s"
-              opt :user_pass, "User password", type: :string, required: true #, short: "-e"
-                end
-          when "copy"  # parse copy options
-            Optimist::options do
-              opt :double, "Copy twice for safety's sake"
-              opt :url, "Harbor URL", type: :string, required: true #, short: "-u"
-              opt :user_name, "User name", type: :string, required: true #, short: "-s"
-              opt :user_pass, "User password", type: :string, required: true #, short: "-e"
-                end
-          else
-            Optimist::die "unknown subcommand #{cmd.inspect}"
-          end
-=end
 
     end
 

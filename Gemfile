@@ -8,4 +8,4 @@ gem "fileutils"
 gem "paint"
 gem "faraday"
 gem "actionview"
-
+gem "highline"

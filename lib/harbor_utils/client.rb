@@ -16,11 +16,7 @@ module HarborUtils
       @connection = Faraday.new(
         url: @url,
         headers: {"Accept" => "application/json",
-                  # "Sec-Fetch-Mode" => "cors",
-                  # "Sec-Fetch-Site" => "same-origin",
-                  # "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:94.0) Gecko/20100101 Firefox/94.0",
-                  # "Host" => "registry.datalite.cz",
-                  # "Referer" => "https://registry.datalite.cz/",
+                  "User-Agent" => "Ruby (Faraday client); HarborUtils module",
                   "Authorization" => basic_auth}
       )
     end
