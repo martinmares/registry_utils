@@ -74,9 +74,19 @@ module HarborUtils
       when :cleanup
         api_projects()
         api_repositories(@project_name, @repository_name)
-        api_artifacts(@project_name, @repository_name)
-        #print_repositories(@project_name)
-        api_cleanup(@project_name, @repository_name)
+        if Utils::blank? @repository_name
+          @projects[@project_name].repositories.each do |name, repo|
+            api_artifacts(@project_name, repo.name)
+            #print_repositories(@project_name, repo.name)
+            #print_artifacts(@project_name, repo.name)
+            api_cleanup(@project_name, repo.name)
+          end
+        else
+          api_artifacts(@project_name, @repository_name)
+          #print_repositories(@project_name, @repository_name)
+          #print_artifacts(@project_name, @repository_name)
+          api_cleanup(@project_name, @repository_name)
+        end
       when :artifacts
         api_projects()
         api_repositories(@project_name, @repository_name)
@@ -261,7 +271,7 @@ module HarborUtils
 
         if repos.has_key? repository_name
           artifacts = repos[repository_name].artifacts.sort_by { |(k, v)| v.id }
-          puts "Project with name: #{Paint[project_name, :cyan]}"
+          # puts "Project with name: #{Paint[project_name, :cyan]}"
           puts "Repo with name: #{Paint[repository_name, :cyan]}"
           puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
           artifacts.each_with_index do |(id, artifact), i|

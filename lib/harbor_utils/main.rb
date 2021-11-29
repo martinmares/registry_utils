@@ -85,7 +85,7 @@ module HarborUtils
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :repository_name, "Repository name", type: :string, required: true, short: "-r"
+            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
             opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
           end
         when "projects"

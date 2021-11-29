@@ -22,6 +22,10 @@ module HarborUtils
       "#{dt.year}-#{dt.month}-#{dt.day}"
     end
 
+    def self.blank?(var)
+      var.nil? || var.empty?
+    end
+
   end
 
 end
