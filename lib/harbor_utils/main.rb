@@ -35,10 +35,6 @@ module HarborUtils
       @command == CMD_PROJECTS
     end
 
-    def cmd_info?
-      @command == CMD_INFO
-    end
-
     def cmd_cleanup?
       @command == CMD_CLEANUP
     end
@@ -56,8 +52,6 @@ module HarborUtils
         @api.call(:health)
       elsif cmd_projects?
         @api.call(:projects)
-      elsif cmd_info?
-        @api.call(:info)
       elsif cmd_cleanup?
         @api.call(:cleanup)
       elsif cmd_repositories?
