@@ -5,6 +5,7 @@
 .lsp
 .clj-kondo
 .vscode
+secrets/
 
 # include
 conf/*
