@@ -94,12 +94,17 @@ module HarborUtils
         api_artifacts(@project_name, @repository_name)
         print_artifacts(@project_name, @repository_name)
       when :snapshot
+        api_projects()
         SnapLoader::with_config(args[:config_file]) do |config|
           puts "Bundles:"
           config.each_bundles_with_index do |bundle, i|
-            puts "  [#{Paint[i.to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]}"
+            puts "  [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]} (project: #{Paint[bundle.project, :yellow]})"
             bundle.each_repos_with_index do |repo, i|
-              puts "       [#{Paint[i.to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}, as_is: #{Paint[repo.keep_tag_as_is, :cyan]})"
+              puts "       [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}, as_is: #{Paint[repo.keep_tag_as_is, :cyan]})"
+              api_repositories(bundle.project, repo.name)
+              api_artifacts(bundle.project, repo.name)
+              print_artifacts(bundle.project, repo.name)
+              # exit 0
             end
           end
         end
@@ -271,7 +276,7 @@ module HarborUtils
     def api_list_of_artifacts(body, page_no, project_name, repository_name, artifacts)
       if body.is_a?(Array)
         body.each_with_index do |artifact, i|
-          artifacts[artifact["id"].to_i] = Artifact.new(artifact["id"], artifact["digest"], artifact["push_time"], artifact["pull_time"], artifact["size"])
+          artifacts[artifact["id"].to_i] = Artifact.new(artifact["id"], artifact["digest"], artifact["push_time"], artifact["pull_time"], artifact["size"], artifact["tags"])
         end
       end
     end
