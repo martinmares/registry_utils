@@ -5,7 +5,7 @@ module HarborUtils
 
     require "optimist"
     require "paint"
-    
+
     require_relative "api"
 
     CMD_HEALTH = "health"
@@ -13,8 +13,9 @@ module HarborUtils
     CMD_REPOSITORIES = "repositories"
     CMD_ARTIFACTS = "artifacts"
     CMD_CLEANUP = "cleanup"
+    CMD_SNAPSHOT = "snapshot"
 
-    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS]
+    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS, CMD_SNAPSHOT]
 
     def initialize()
       @command, @global_args, @args = parse_args()
@@ -46,6 +47,10 @@ module HarborUtils
       @command == CMD_ARTIFACTS
     end
 
+    def cmd_snapshot?
+      @command == CMD_SNAPSHOT
+    end
+
     def run
       if cmd_health?
         @api.call(:health)
@@ -57,6 +62,8 @@ module HarborUtils
         @api.call(:repositories)
       elsif cmd_artifacts?
         @api.call(:artifacts)
+      elsif cmd_snapshot?
+        @api.call(:snapshot, config_file: @args[:config_file])
       end
     end
 
@@ -107,6 +114,14 @@ module HarborUtils
             opt :url, "Harbor URL", type: :string, required: true, short: "-u"
             opt :user, "User name", type: :string, required: true, short: "-s"
             opt :pass, "Password", type: :string, required: true, short: "-e"
+          end
+        when "snapshot"
+          Optimist::options do
+            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
+            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :pass, "Password", type: :string, required: true, short: "-e"
+            opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :config_file, "Config file name (with bundle info)", type: :string, required: true, short: "-c"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

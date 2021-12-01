@@ -8,6 +8,7 @@ module HarborUtils
   require_relative "project"
   require_relative "repository"
   require_relative "artifact"
+  require_relative "snap_loader"
 
   PAGE_SIZE = 10
   class Api
@@ -58,7 +59,7 @@ module HarborUtils
       status.downcase.start_with?("health")
     end
 
-    def call(what)
+    def call(what, args=nil)
       case what
       when :health
         api_health()
@@ -92,6 +93,16 @@ module HarborUtils
         api_repositories(@project_name, @repository_name)
         api_artifacts(@project_name, @repository_name)
         print_artifacts(@project_name, @repository_name)
+      when :snapshot
+        SnapLoader::with_config(args[:config_file]) do |config|
+          puts "Bundles:"
+          config.each_bundles_with_index do |bundle, i|
+            puts "  [#{Paint[i.to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]}"
+            bundle.each_repos_with_index do |repo, i|
+              puts "       [#{Paint[i.to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}, as_is: #{Paint[repo.keep_tag_as_is, :cyan]})"
+            end
+          end
+        end
       end
     end
 
