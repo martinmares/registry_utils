@@ -16,7 +16,8 @@ module HarborUtils
     attr_reader :projects
 
     def initialize(url, user, pass, project_name, repository_name, keep_last_n)
-      @client = HarborUtils::Client.new(url, user, pass)
+      @url = url
+      @client = HarborUtils::Client.new(@url, user, pass)
       @project_name = project_name
       @repository_name = repository_name
       @keep_last_n = keep_last_n
@@ -97,6 +98,7 @@ module HarborUtils
         api_projects()
         SnapLoader::with_config(args[:config_file]) do |config|
           puts "Bundles:"
+          completed = true
           config.each_bundles_with_index do |bundle, i|
             puts "  [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]} (project: #{Paint[bundle.project, :yellow]})"
             bundle.each_repos_with_index do |repo, i|
@@ -105,15 +107,22 @@ module HarborUtils
               api_artifacts(bundle.project, repo.name)
               # print_artifacts(bundle.project, repo.name)
               detected = detect_artifact_with_tag(bundle.project, repo.name, repo.tag)
+              repo.add_image_url(@url, bundle.project, repo.name)
               if detected
                 puts "            => #{Paint[detected.digest, :green]}"
+                repo.detected(true)
+                repo.add_detected_digest(detected.digest)
               else
-                msg = "Any artifact with tag name \"#{repo.tag}\"!"
+                msg = "There is no artifact with tag name \"#{repo.tag}\"!"
                 puts "            => #{Paint[msg, :red]}"
+                repo.detected(false)
+                completed = false
               end
               # exit 0
             end
           end
+          config.completed(completed)
+          config.save()
         end
       end
     end

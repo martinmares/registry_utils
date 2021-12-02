@@ -1,4 +1,5 @@
-target: snapshots/cetin
+name: tsm-cetin-release
+target: snapshots
 bundles:
   - name: tsm-core
     project: tsm
