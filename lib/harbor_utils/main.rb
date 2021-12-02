@@ -6,7 +6,7 @@ module HarborUtils
     require "optimist"
     require "paint"
 
-    require_relative "api"
+    require_relative "harbor"
 
     CMD_HEALTH = "health"
     CMD_PROJECTS = "projects"
@@ -20,7 +20,7 @@ module HarborUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @api = Api.new(@args[:url], @args[:user], @args[:pass], @args[:project_name], @args[:repository_name], @args[:keep_last_n])
+      @harbor = Harbor.new(@args)
       puts "Running command #{Paint[@command, :yellow]} ..."
     end
 
@@ -58,19 +58,19 @@ module HarborUtils
 
     def run
       if cmd_health?
-        @api.call(:health)
+        @harbor.call(:health)
       elsif cmd_projects?
-        @api.call(:projects)
+        @harbor.call(:projects)
       elsif cmd_cleanup?
-        @api.call(:cleanup)
+        @harbor.call(:cleanup)
       elsif cmd_repositories?
-        @api.call(:repositories)
+        @harbor.call(:repositories)
       elsif cmd_artifacts?
-        @api.call(:artifacts)
+        @harbor.call(:artifacts)
       elsif cmd_snapshot?
-        @api.call(:snapshot, config_file: @args[:config_file])
+        @harbor.call(:snapshot)
       elsif cmd_transfer?
-        @api.call(:snapshot)
+        @harbor.call(:snapshot, images_file: @args[:images_file])
       end
     end
 
@@ -129,6 +129,18 @@ module HarborUtils
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project_name, "Project name", type: :string, required: true, short: "-p"
             opt :config_file, "Config file name (with bundle info)", type: :string, required: true, short: "-c"
+          end
+        when "transfer"
+          Optimist::options do
+            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
+            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :pass, "Password", type: :string, required: true, short: "-e"
+            opt :project_name, "Project name", type: :string, required: true, short: "-p"
+            opt :images_file, "Images file name (with sha256 digests)", type: :string, required: true, short: "-i"
+            opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
+            opt :target_user, "User name (target)", type: :string, required: true, short: "-e"
+            opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
+            opt :target_project_name, "Project name (target)", type: :string, required: true, short: "-r"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

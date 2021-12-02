@@ -11,16 +11,17 @@ module HarborUtils
   require_relative "snap_loader"
 
   PAGE_SIZE = 10
-  class Api
+  class Harbor
 
     attr_reader :projects
 
-    def initialize(url, user, pass, project_name, repository_name, keep_last_n)
-      @url = url
-      @client = HarborUtils::Client.new(@url, user, pass)
-      @project_name = project_name
-      @repository_name = repository_name
-      @keep_last_n = keep_last_n
+    def initialize(args)
+      @args = args
+      @url = @args[:url]
+      @client = HarborUtils::Client.new(@url, @args[:user], @args[:pass])
+      @project_name = @args[:project_name]
+      @repository_name = @args[:repository_name]
+      @keep_last_n = @args[:keep_last_n]
       @api_path = "api/v2.0"
       @projects = {}
     end
@@ -60,7 +61,7 @@ module HarborUtils
       status.downcase.start_with?("health")
     end
 
-    def call(what, args=nil)
+    def call(what)
       case what
       when :health
         api_health()
@@ -95,8 +96,9 @@ module HarborUtils
         api_artifacts(@project_name, @repository_name)
         print_artifacts(@project_name, @repository_name)
       when :snapshot
+        config_file = @args[:config_file]
         api_projects()
-        SnapLoader::with_config(args[:config_file]) do |config|
+        SnapLoader::with_config(config_file) do |config|
           puts "Bundles:"
           completed = true
           config.each_bundles_with_index do |bundle, i|
@@ -123,6 +125,13 @@ module HarborUtils
           end
           config.completed(completed)
           config.save()
+        end
+      when :transfer
+        images_file = @args[:images_file]
+        from = ""
+        to = ""
+        DockerTransfer::with_config(images_file, from, to) do |config|
+          puts "Transfer images:"
         end
       end
     end
