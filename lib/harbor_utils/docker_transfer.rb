@@ -34,19 +34,19 @@ module HarborUtils
       @images.each_with_index do |img, i|
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
         docker_auth(@docker)
-        puts "     👈 => #{Paint['pull', :yellow]} #{img.docker_img_name}"
+        puts " => 👈 #{img.docker_img_name}"
         local_img = Docker::Image.create('fromImage' => img.docker_img_name)
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts "     🎁 => #{Paint['tag', :yellow]} #{@snapshot}"
+        puts " => 🎁 #{@snapshot}"
         local_img.tag('repo' => remote_img_name, 'tag' => @snapshot , force: true)
         docker_auth(@target_docker)
-        puts "     👉 => #{Paint['push', :yellow]} #{remote_img_name}:#{@snapshot}"
+        puts " => 👉 #{remote_img_name}:#{@snapshot}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{@snapshot}")
         local_img.remove(:force => true)
         if push_result
-          puts "     😺 everything is fine, pushing #{Paint['ok', :green]}, `meow`"
+          puts " 😺 everything is fine, pushing #{Paint['ok', :green]}, `meow`"
         else
-          puts "     😿 I'm crying, pushing #{Paint['failed', :red]}, `meow`"
+          puts " 😿 I'm crying, pushing #{Paint['failed', :red]}, `meow`"
         end
       end
     end
