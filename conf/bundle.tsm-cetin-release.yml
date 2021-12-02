@@ -1,0 +1,78 @@
+target: snapshots/cetin
+bundles:
+  - name: tsm-core
+    project: tsm
+    repositories:
+      - name: tsm-address-management
+        tag: master
+      - name: tsm-calendar
+        tag: master
+      - name: tsm-gateway
+        tag: master
+      - name: tsm-service-discovery
+        tag: master
+      - name: tsm-config
+        tag: master
+      - name: tsm-process-definition
+        tag: master
+      - name: tsm-ui
+        tag: cetin-master
+      - name: tsm-user-management
+        tag: cetin-master
+      - name: tsm-dms
+        tag: cetin-master
+      - name: tsm-ticket
+        tag: cetin-master
+      - name: tsm-change-management
+        tag: cetin-master
+  - name: tsm-cetin-deco
+    project: tsm
+    repositories:
+      - name: tsm-cetin-deco-prioritizer
+        tag: test
+      - name: tsm-cetin-deco-distributor
+        tag: test
+      - name: tsm-cetin-deco-sluzby
+        tag: test
+      - name: tsm-cetin-deco-prvek
+        tag: test
+      - name: tsm-cetin-deco-technol
+        tag: test
+      - name: tsm-cetin-deco-worker
+        tag: test
+      - name: tsm-cetin-deco-krok
+        tag: test
+      - name: tsm-cetin-deco-pary
+        tag: test
+      - name: tsm-cetin-deco-rozvadec
+        tag: test
+      - name: tsm-cetin-deco-it
+        tag: test
+      - name: tsm-cetin-deco-mobilni
+        tag: test
+      - name: tsm-cetin-deco-porty
+        tag: test
+      - name: tsm-cetin-deco-import-node
+        tag: test
+      - name: tsm-cetin-deco-import-sluzby
+        tag: test
+      - name: tsm-cetin-deco-import-lokality
+        tag: test
+  - name: tsm-infra
+    project: tsm
+    repositories:
+      - name: tsm-elasticsearch-proxy
+        tag: 1.0.1
+        keep_tag_as_is: true
+      - name: tsm-reproxy
+        tag: 1.0.2
+        keep_tag_as_is: true
+      - name: tsm-log-server
+        tag: 1.0.3
+        keep_tag_as_is: true
+      - name: tsm-cache
+        tag: 6.2.3
+        keep_tag_as_is: true
+      - name: tsm-html-to-pdf
+        tag: 1.1.3
+        keep_tag_as_is: true

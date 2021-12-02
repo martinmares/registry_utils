@@ -103,7 +103,14 @@ module HarborUtils
               puts "       [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}, as_is: #{Paint[repo.keep_tag_as_is, :cyan]})"
               api_repositories(bundle.project, repo.name)
               api_artifacts(bundle.project, repo.name)
-              print_artifacts(bundle.project, repo.name)
+              # print_artifacts(bundle.project, repo.name)
+              detected = detect_artifact_with_tag(bundle.project, repo.name, repo.tag)
+              if detected
+                puts "            => #{Paint[detected.digest, :green]}"
+              else
+                msg = "Any artifact with tag name \"#{repo.tag}\"!"
+                puts "            => #{Paint[msg, :red]}"
+              end
               # exit 0
             end
           end
@@ -296,6 +303,22 @@ module HarborUtils
           end
         end
       end
+    end
+
+    def detect_artifact_with_tag(project_name, repository_name, tag_name)
+      if @projects.has_key? project_name
+
+        project = @projects[project_name]
+        repos = project.repositories
+
+        if repos.has_key? repository_name
+          artifacts = repos[repository_name].artifacts.sort { |(ka, va), (kb, vb)| vb.id <=> va.id } # sort descending
+          artifacts.each_with_index do |(id, artifact), i|
+            return artifact if (artifact.tags.any? { |t| t == tag_name })
+          end
+        end
+      end
+      nil
     end
 
     def api_cleanup(project_name, repository_name)

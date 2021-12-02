@@ -8,7 +8,7 @@
 secrets/
 
 # include
-conf/*
+# conf/*
 
 # exclude
 # exclude
