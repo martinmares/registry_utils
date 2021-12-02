@@ -28,39 +28,39 @@ module HarborUtils
 
     def save
       puts "\nSaving now:"
-      target_dir = "#{@target}/#{@name}"
-      if File.directory? target_dir
-        puts "  target 📁 #{Paint[target_dir, :green]} exists"
+
+      if completed?
+        target_dir = "#{@target}/#{@name}"
       else
-        puts "  created target 📁 #{Paint[target_dir, :red]}"
-        FileUtils.mkdir_p target_dir
+        target_dir = "#{@target}/#{@name}/failed"
       end
 
-      today = DateTime.now.strftime("#{CALENDAR_PATTERN}")
+      dt = DateTime.now
+      today = dt.strftime("#{CALENDAR_PATTERN}")
       patch = find_patch(today, target_dir)
       new_patch = patch + 1
+      check_dir "#{target_dir}"
+      save_to = "#{target_dir}/#{today}.#{new_patch}.images.yml"
 
-      if patch == -1
+      if first_patch_today?(patch)
         puts "  first patch today 🎂 , party starts now! 🎉🎉🎉 , patch no #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
       else
         puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
       end
 
-      if completed?
-        save_to = "#{target_dir}/#{today}.#{new_patch}.images.yml"
-      else
-        save_to = "#{target_dir}/failed/#{today}.#{new_patch}.images.yml"
-      end
-
       yaml = make_yaml()
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
-      if @completed
+
+      if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)
-        puts "  😺 everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}"
+        puts "  😺 everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}, `meow`"
+        meow()
       else
-        puts "  😿 I didn't find some pictures by tag, `Meow`"
+        puts "  😿 I'm crying, #{Paint['didn\'t find', :red]} some images by tag, `meow`"
+        mouse()
       end
+
     end
 
     def completed(result)
@@ -72,6 +72,24 @@ module HarborUtils
     end
 
     private
+
+    def first_patch_today?(patch)
+      patch == -1
+    end
+
+    def meow
+      puts "\n"
+      puts "  /\\_/\\"
+      puts " ( o.o )"
+      puts "  > ^ <"
+    end
+
+    def mouse
+      puts "\n"
+      puts "  __QQ"
+      puts "  (_)_\">"
+      puts " _)"     
+    end
 
     def parse
       @content = YAML.load_file(@file_name)
@@ -105,7 +123,9 @@ module HarborUtils
                       "detected" => repos.detected? }
         end
       end
-      images.to_yaml
+      { "timestamp" => DateTime.now.to_s,
+        "utc" => DateTime.now.new_offset(0).to_s,
+        "images" => images}.to_yaml
     end
 
     def find_patch(day, target_dir)
@@ -119,6 +139,15 @@ module HarborUtils
       end
       result = patches.max if patches.size > 0
       result
+    end
+
+    def check_dir(dir_name)
+      if File.directory? dir_name
+        puts "  target 📁 #{Paint[dir_name, :green]} exists"
+      else
+        puts "  created target 📁 #{Paint[dir_name, :red]}"
+        FileUtils.mkdir_p dir_name
+      end
     end
 
   end
