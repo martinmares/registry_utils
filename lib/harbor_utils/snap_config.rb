@@ -58,10 +58,10 @@ module HarborUtils
 
       if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)
-        puts "  😺 everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}, `meow`"
+        puts "  ✅ 😺 everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}, `meow`"
         meow()
       else
-        puts "  😿 I'm crying, #{Paint['didn\'t find', :red]} some images by tag, `meow`"
+        puts "  ❌ 😿 I'm crying, #{Paint['didn\'t find', :red]} some images by tag, `meow`"
         mouse()
       end
 

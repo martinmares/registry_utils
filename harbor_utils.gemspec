@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name         = "harbor_utils"
-  s.version      = "1.2.0"
+  s.version      = "1.2.1"
   s.author       = "Martin Mareš"
   s.email        = "martin.mares@seznam.cz"
   s.summary      = "Harbor utility (docker registry). Working with Harbor REST API spec."

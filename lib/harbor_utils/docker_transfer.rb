@@ -34,20 +34,21 @@ module HarborUtils
       @images.each_with_index do |img, i|
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
         docker_auth(@docker)
-        puts " => 👈 #{img.docker_img_name}"
+        puts "  👈 #{img.docker_img_name}"
         local_img = Docker::Image.create('fromImage' => img.docker_img_name)
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts " => 🎁 #{@snapshot}"
+        puts "  🎁 #{@snapshot}"
         local_img.tag('repo' => remote_img_name, 'tag' => @snapshot , force: true)
         docker_auth(@target_docker)
-        puts " => 👉 #{remote_img_name}:#{@snapshot}"
+        puts "  👉 #{remote_img_name}:#{@snapshot}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{@snapshot}")
         local_img.remove(:force => true)
         if push_result
-          puts " 😺 everything is fine, pushing #{Paint['ok', :green]}, `meow`"
+          puts "     ✅  Everything is OK, `meow` 😺"
         else
-          puts " 😿 I'm crying, pushing #{Paint['failed', :red]}, `meow`"
+          puts "     ❌  I'm crying, `meow` 😿"
         end
+        puts "\n"
       end
     end
     # docker pull registry.datalite.cz/tsm-cetin-release/snapshot/tsm-address-management@sha256:19b6b4c3248635171a2a3ef772416a82295a7f4858495b10d1dc67148157de73
