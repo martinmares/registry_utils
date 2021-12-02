@@ -4,12 +4,14 @@ module HarborUtils
   require "awesome_print"
   require "fileutils"
   require "date"
+  require 'uri'
 
   class SnapConfig
     attr_reader :file_name, :target
 
     CALENDAR_PATTERN = "%Y.%m.%d"
-    LATEST_IMAGES_FILENAME = "latest.images.yml"
+    IMAGES_EXTENSION = "images.yml"
+    LATEST_IMAGES_FILENAME = "latest.#{IMAGES_EXTENSION}"
     SNAPSHOTS_DIR = "snapshots"
     FAILED_SNAPSHOTS_SUBDIR = "failed"
 
@@ -115,13 +117,15 @@ module HarborUtils
       images = []
       each_bundles do |bundle|
         bundle.each_repos do |repos|
+          uri = URI("#{repos.image_url}")
           images << { "name" => repos.name,
                       "tag" => repos.tag,
-                      "url" => repos.url,
+                      "host" => uri.host,
+                      "port" => uri.port,
+                      "scheme" => uri.scheme,
                       "project" => repos.project,
                       "repository" => repos.repository,
                       "digest" => repos.detected_digest,
-                      "image_url" => repos.image_url,
                       "detected" => repos.detected? }
         end
       end

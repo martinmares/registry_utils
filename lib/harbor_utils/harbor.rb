@@ -3,12 +3,14 @@ module HarborUtils
   require "awesome_print"
   require "paint"
   require "highline/import"
+  require "benchmark"
   require_relative "client"
   require_relative "utils"
   require_relative "project"
   require_relative "repository"
   require_relative "artifact"
   require_relative "snap_loader"
+  require_relative "docker_transfer"
 
   PAGE_SIZE = 10
   class Harbor
@@ -120,18 +122,20 @@ module HarborUtils
                 repo.detected(false)
                 completed = false
               end
-              # exit 0
             end
           end
           config.completed(completed)
           config.save()
         end
       when :transfer
-        images_file = @args[:images_file]
-        from = ""
-        to = ""
-        DockerTransfer::with_config(images_file, from, to) do |config|
-          puts "Transfer images:"
+        # ./bin/harbor_utils transfer
+        #    from ==>   -l $HARBOR_URL -u $HARBOR_USER -e $HARBOR_PASS -b tsm-cetin-release -s latest
+        #    to   ==>   -t $HARBOR_URL -n $HARBOR_USER -w $HARBOR_PASS -p tsm-cetin-release
+        DockerTransfer::open_with(@args) do |docker|
+          puts "Transfer images ..."
+          t = Benchmark.measure { docker.transfer_images() }
+          puts "\n"
+          puts " ⌛ real time: #{Paint[t.real, :magenta]} sec"
         end
       end
     end

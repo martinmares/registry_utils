@@ -70,7 +70,7 @@ module HarborUtils
       elsif cmd_snapshot?
         @harbor.call(:snapshot)
       elsif cmd_transfer?
-        @harbor.call(:snapshot, images_file: @args[:images_file])
+        @harbor.call(:transfer)
       end
     end
 
@@ -87,60 +87,60 @@ module HarborUtils
       opts = case subcommand
         when "cleanup"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
+            opt :project, "Project name", type: :string, required: true, short: "-p"
+            opt :repository, "Repository name", type: :string, required: false, short: "-r"
             opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
           end
         when "projects"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
           end
         when "repositories"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
+            opt :project, "Project name", type: :string, required: true, short: "-p"
+            opt :repository, "Repository name", type: :string, required: false, short: "-r"
           end
         when "artifacts"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :repository_name, "Repository name", type: :string, required: false, short: "-r"
+            opt :project, "Project name", type: :string, required: true, short: "-p"
+            opt :repository, "Repository name", type: :string, required: false, short: "-r"
           end
         when "health"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
           end
         when "snapshot"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
             opt :config_file, "Config file name (with bundle info)", type: :string, required: true, short: "-c"
           end
         when "transfer"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-u"
-            opt :user, "User name", type: :string, required: true, short: "-s"
+            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :project_name, "Project name", type: :string, required: true, short: "-p"
-            opt :images_file, "Images file name (with sha256 digests)", type: :string, required: true, short: "-i"
+            opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
+            opt :snapshot, "Snapshot version (contains images with sha256 digests)", type: :string, required: true, short: "-s"
+            opt :target_project, "Project name (target)", type: :string, required: true, short: "-p"
             opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
-            opt :target_user, "User name (target)", type: :string, required: true, short: "-e"
+            opt :target_user, "User name (target)", type: :string, required: true, short: "-n"
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
-            opt :target_project_name, "Project name (target)", type: :string, required: true, short: "-r"
+            opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-o"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

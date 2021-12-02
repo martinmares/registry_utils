@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name         = "harbor_utils"
-  s.version      = "1.0.1"
+  s.version      = "1.2.0"
   s.author       = "Martin Mareš"
   s.email        = "martin.mares@seznam.cz"
   s.summary      = "Harbor utility (docker registry). Working with Harbor REST API spec."
@@ -13,5 +13,4 @@ Gem::Specification.new do |s|
   s.executables   = [ 'harbor_utils' ]
 
   s.required_ruby_version = '>=3'
-  # s.add_development_dependency 'rspec', '~> 2.8', '>= 2.8.0'
 end

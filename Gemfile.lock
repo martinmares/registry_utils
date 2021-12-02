@@ -2,6 +2,10 @@ GEM
   remote: https://rubygems.org/
   specs:
     awesome_print (1.9.2)
+    docker-api (2.2.0)
+      excon (>= 0.47.0)
+      multi_json
+    excon (0.88.0)
     faraday (1.8.0)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -24,6 +28,7 @@ GEM
     fileutils (1.6.0)
     highline (2.0.3)
     json (2.6.1)
+    multi_json (1.15.0)
     multipart-post (2.1.1)
     optimist (3.0.1)
     paint (2.2.1)
@@ -35,6 +40,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  docker-api
   faraday
   fileutils
   highline
