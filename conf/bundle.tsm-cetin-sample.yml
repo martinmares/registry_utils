@@ -1,5 +1,4 @@
 name: tsm-cetin-sample
-target: snapshots
 bundles:
   - name: tsm-core
     project: tsm

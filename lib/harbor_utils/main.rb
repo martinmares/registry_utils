@@ -14,8 +14,9 @@ module HarborUtils
     CMD_ARTIFACTS = "artifacts"
     CMD_CLEANUP = "cleanup"
     CMD_SNAPSHOT = "snapshot"
+    CMD_TRANSFER = "transfer"
 
-    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS, CMD_SNAPSHOT]
+    SUB_COMMANDS = [CMD_CLEANUP, CMD_PROJECTS, CMD_HEALTH, CMD_REPOSITORIES, CMD_ARTIFACTS, CMD_SNAPSHOT, CMD_TRANSFER]
 
     def initialize()
       @command, @global_args, @args = parse_args()
@@ -51,6 +52,10 @@ module HarborUtils
       @command == CMD_SNAPSHOT
     end
 
+    def cmd_transfer?
+      @command == CMD_TRANSFER
+    end
+
     def run
       if cmd_health?
         @api.call(:health)
@@ -64,6 +69,8 @@ module HarborUtils
         @api.call(:artifacts)
       elsif cmd_snapshot?
         @api.call(:snapshot, config_file: @args[:config_file])
+      elsif cmd_transfer?
+        @api.call(:snapshot)
       end
     end
 

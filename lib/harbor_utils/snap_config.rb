@@ -10,6 +10,8 @@ module HarborUtils
 
     CALENDAR_PATTERN = "%Y.%m.%d"
     LATEST_IMAGES_FILENAME = "latest.images.yml"
+    SNAPSHOTS_DIR = "snapshots"
+    FAILED_SNAPSHOTS_SUBDIR = "failed"
 
     def initialize(file_name)
       @file_name = file_name
@@ -32,7 +34,7 @@ module HarborUtils
       if completed?
         target_dir = "#{@target}/#{@name}"
       else
-        target_dir = "#{@target}/#{@name}/failed"
+        target_dir = "#{@target}/#{@name}/#{FAILED_SNAPSHOTS_SUBDIR}"
       end
 
       dt = DateTime.now
@@ -88,12 +90,12 @@ module HarborUtils
       puts "\n"
       puts "  __QQ"
       puts "  (_)_\">"
-      puts " _)"     
+      puts " _)"
     end
 
     def parse
       @content = YAML.load_file(@file_name)
-      @target = @content["target"]
+      @target = SNAPSHOTS_DIR
       @name = @content["name"]
       if @content.has_key? "bundles"
         @content["bundles"].each do |bundle|

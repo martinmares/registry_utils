@@ -1,5 +1,4 @@
 name: demo
-target: snapshots
 bundles:
   - name: tsm-core
     project: tsm
