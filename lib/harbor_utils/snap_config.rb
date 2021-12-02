@@ -35,7 +35,7 @@ module HarborUtils
         puts "  created target 📁 #{Paint[target_dir, :red]}"
         FileUtils.mkdir_p target_dir
       end
-      
+
       today = DateTime.now.strftime("#{CALENDAR_PATTERN}")
       patch = find_patch(today, target_dir)
       new_patch = patch + 1
@@ -51,7 +51,7 @@ module HarborUtils
       else
         save_to = "#{target_dir}/failed/#{today}.#{new_patch}.images.yml"
       end
-      
+
       yaml = make_yaml()
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
@@ -133,7 +133,7 @@ module HarborUtils
     end
 
     def add_repository(repository)
-      @repositories << repository  
+      @repositories << repository
     end
 
     def each_repos
