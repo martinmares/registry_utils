@@ -6,6 +6,7 @@
 .clj-kondo
 .vscode
 secrets/
+snapshots/
 
 # include
 # conf/*
