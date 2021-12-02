@@ -37,11 +37,11 @@ module HarborUtils
         puts "  👈 #{img.docker_img_name}"
         local_img = Docker::Image.create('fromImage' => img.docker_img_name)
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts "  🎁 #{@snapshot}"
-        local_img.tag('repo' => remote_img_name, 'tag' => @snapshot , force: true)
+        puts "  🎁 #{img.snapshot_id}"
+        local_img.tag('repo' => remote_img_name, 'tag' => img.snapshot_id , force: true)
         docker_auth(@target_docker)
-        puts "  👉 #{remote_img_name}:#{@snapshot}"
-        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{@snapshot}")
+        puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
+        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{img.snapshot_id}")
         local_img.remove(:force => true)
         if push_result
           puts "     ✅  Everything is OK, `meow` 😺"
@@ -71,7 +71,7 @@ module HarborUtils
       snap = YAML.load_file(snapshot_file_name)
       if snap.has_key? "images"
         snap["images"].each do |img|
-          di = DockerImage.new(img["name"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"])
+          di = DockerImage.new(img["name"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"])
           @images << di
         end
       end
@@ -106,9 +106,10 @@ module HarborUtils
   end
 
   class DockerImage
-    attr_accessor :name, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected
-    def initialize(name, tag, host, port , scheme, project, repository, digest, detected)
+    attr_accessor :name, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected
+    def initialize(name, snapshot_id, tag, host, port , scheme, project, repository, digest, detected)
       @name = name
+      @snapshot_id = snapshot_id
       @tag = tag
       @host = host
       @port = port

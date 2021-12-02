@@ -52,16 +52,16 @@ module HarborUtils
         puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
       end
 
-      yaml = make_yaml()
+      yaml = make_yaml("#{today}.#{new_patch}")
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
 
       if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)
-        puts "  ✅ 😺 everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}, `meow`"
+        puts "  ✅  Everything is fine, I'm overwriting the contents of #{Paint[LATEST_IMAGES_FILENAME, :green]}, `meow` 😺"
         meow()
       else
-        puts "  ❌ 😿 I'm crying, #{Paint['didn\'t find', :red]} some images by tag, `meow`"
+        puts "  ❌  I'm crying, #{Paint['didn\'t find', :red]} some images by tag, `meow` 😿"
         mouse()
       end
 
@@ -113,7 +113,7 @@ module HarborUtils
       end
     end
 
-    def make_yaml
+    def make_yaml(snapshot_id)
       images = []
       each_bundles do |bundle|
         bundle.each_repos do |repos|
@@ -131,6 +131,7 @@ module HarborUtils
       end
       { "timestamp" => DateTime.now.to_s,
         "utc" => DateTime.now.new_offset(0).to_s,
+        "snapshot_id" => snapshot_id,
         "images" => images}.to_yaml
     end
 
