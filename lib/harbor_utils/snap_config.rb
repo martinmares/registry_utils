@@ -40,7 +40,11 @@ module HarborUtils
       patch = find_patch(today, target_dir)
       new_patch = patch + 1
 
-      puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
+      if patch == -1
+        puts "  first patch today 🎂 , party starts now! 🎉🎉🎉 , patch no #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
+      else
+        puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
+      end
 
       if completed?
         save_to = "#{target_dir}/#{today}.#{new_patch}.images.yml"
@@ -107,7 +111,7 @@ module HarborUtils
     def find_patch(day, target_dir)
       # puts "#{target_dir}/#{day}.*.images.yml"
       # "snapshots/tsm-cetin-sample/2021.12.02.*.images.yml"
-      result = 0
+      result = -1
       patches = []
       Dir.glob("#{target_dir}/#{day}.*.images.yml").each do |f|
         patch_no = /(\d+).(\d+).(\d+).(\d+).(\w+).yml/.match(File.basename f)[4]
