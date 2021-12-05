@@ -9,7 +9,7 @@ secrets/
 snapshots/
 
 # include
-# conf/*
+conf/
 
 # exclude
 # exclude
