@@ -62,17 +62,12 @@ bundles:
     project: tsm
     repositories:
       - name: tsm-elasticsearch-proxy
-        tag: 1.0.1
-        keep_tag_as_is: true
+        tag: latest
       - name: tsm-reproxy
-        tag: 1.0.2
-        keep_tag_as_is: true
+        tag: latest
       - name: tsm-log-server
-        tag: 1.0.3
-        keep_tag_as_is: true
+        tag: latest
       - name: tsm-cache
-        tag: 6.2.3
-        keep_tag_as_is: true
+        tag: latest
       - name: tsm-html-to-pdf
-        tag: 1.1.3
-        keep_tag_as_is: true
+        tag: latest
