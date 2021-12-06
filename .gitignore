@@ -5,6 +5,7 @@
 .lsp
 .clj-kondo
 .vscode
+.tmp
 secrets/
 snapshots/
 
