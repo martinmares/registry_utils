@@ -101,7 +101,7 @@ module HarborUtils
       @url = url
       @user = user
       @pass = pass
-      puts "DockerEndpint to #{url}"
+      puts "Created DockerEndpoint to: #{url}"
     end
   end
 
