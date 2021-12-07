@@ -43,7 +43,6 @@ module HarborUtils
         docker_auth(@target_docker)
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{img.snapshot_id}")
-        local_img.remove(:force => true)
         if push_result
           puts "     ✅  Everything is OK, `meow` 😺"
         else
@@ -52,6 +51,7 @@ module HarborUtils
 
         if @latest_tag
           puts "  🎁 latest"
+          local_img = Docker::Image.create('fromImage' => img.docker_img_name)
           local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
           docker_auth(@target_docker)
           puts "  👉 #{remote_img_name}:latest"
@@ -63,6 +63,8 @@ module HarborUtils
             puts "     ❌  I'm crying, `meow` 😿"
           end  
         end
+
+        local_img.remove(:force => true)
 
         puts "\n"
       end
