@@ -56,7 +56,6 @@ module HarborUtils
           docker_auth(@target_docker)
           puts "  👉 #{remote_img_name}:latest"
           push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest")
-          local_img.remove(:force => true)
           if push_result
             puts "     ✅  Everything is OK, `meow` 😺"
           else
