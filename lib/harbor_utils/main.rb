@@ -143,6 +143,7 @@ module HarborUtils
             opt :target_user, "User name (target)", type: :string, required: true, short: "-n"
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
             opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-a"
+            opt :latest_tag, "Add latest tag (target)", type: :boolean, required: false, short: "-z"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

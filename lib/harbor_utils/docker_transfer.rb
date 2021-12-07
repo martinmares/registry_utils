@@ -18,6 +18,7 @@ module HarborUtils
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
+      @latest_tag = args[:latest_tag] || false
       ENV["DOCKER_URL"] = @docker_api # https://github.com/swipely/docker-api
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
       @target_docker = DockerEndpoit.new(args[:target_url], args[:target_user], args[:target_pass])
@@ -48,6 +49,21 @@ module HarborUtils
         else
           puts "     ❌  I'm crying, `meow` 😿"
         end
+
+        if @latest_tag
+          puts "  🎁 latest"
+          local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
+          docker_auth(@target_docker)
+          puts "  👉 #{remote_img_name}:latest"
+          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest")
+          local_img.remove(:force => true)
+          if push_result
+            puts "     ✅  Everything is OK, `meow` 😺"
+          else
+            puts "     ❌  I'm crying, `meow` 😿"
+          end  
+        end
+
         puts "\n"
       end
     end
