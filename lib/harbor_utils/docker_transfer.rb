@@ -43,23 +43,15 @@ module HarborUtils
         docker_auth(@target_docker)
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{img.snapshot_id}")
-        if push_result
-          puts "     ✅  Everything is OK, `meow` 😺"
-        else
-          puts "     ❌  I'm crying, `meow` 😿"
-        end
-
+        print_result(push_result)
+        
         if @latest_tag
           puts "  🎁 latest"
           local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
           docker_auth(@target_docker)
           puts "  👉 #{remote_img_name}:latest"
           push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest")
-          if push_result
-            puts "     ✅  Everything is OK, `meow` 😺"
-          else
-            puts "     ❌  I'm crying, `meow` 😿"
-          end  
+          print_result(push_result)
         end
 
         local_img.remove(:force => true)
@@ -94,6 +86,14 @@ module HarborUtils
     end
 
     private
+
+    def print_result(result)
+      if push_result
+        puts "     ✅  Everything is OK, `meow` 😺"
+      else
+        puts "     ❌  I'm crying, `meow` 😿"
+      end
+    end
 
     def docker_auth(endpoint)
       Docker.authenticate!('username' => endpoint.user, \
