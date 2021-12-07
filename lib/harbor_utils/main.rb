@@ -127,7 +127,9 @@ module HarborUtils
             opt :url, "Harbor URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
-            opt :config_file, "Config file name (with bundle info)", type: :string, required: true, short: "-c"
+            opt :bundle, "Bundle name (must be located here: `conf/bundle.{bundle-name}.yml`)", type: :string, required: true, short: "-b"
+            opt :patch_snapshot_id, "Patch snapshot ID (contains images with sha256 digests)", type: :string, required: false, short: "-s"
+            opt :patch_repositories, "Patch only repositories (comma separated list)", type: :string, require: false, short: "-o"
           end
         when "transfer"
           Optimist::options do
@@ -140,7 +142,7 @@ module HarborUtils
             opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
             opt :target_user, "User name (target)", type: :string, required: true, short: "-n"
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
-            opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-o"
+            opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-a"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

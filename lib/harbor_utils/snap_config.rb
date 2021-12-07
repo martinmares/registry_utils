@@ -14,9 +14,11 @@ module HarborUtils
     LATEST_IMAGES_FILENAME = "latest.#{IMAGES_EXTENSION}"
     SNAPSHOTS_DIR = "snapshots"
     FAILED_SNAPSHOTS_SUBDIR = "failed"
+    BUNDLE_CONF_DIR = "conf"
 
-    def initialize(file_name)
-      @file_name = file_name
+    def initialize(bundle_name)
+      @bundle_name = bundle_name
+      @file_name = "#{BUNDLE_CONF_DIR}/bundle.#{bundle_name}.yml"
       @bundles = []
       @completed = false
       parse()
@@ -30,9 +32,15 @@ module HarborUtils
       @bundles.each_with_index { |bundle, i| yield bundle, i }
     end
 
-    def save
-      puts "\nSaving now:"
-
+    def save(args)
+      if args[:patch_snapshot_id] && args[:patch_repositories]
+        puts "\nSaving now ... (patch only)"
+        patch_snapshot_id = args[:patch_snapshot_id]
+        patch_repositories = args[:patch_repositories]
+      else
+        puts "\nSaving now ..."
+      end
+      
       if completed?
         target_dir = "#{@target}/#{@name}"
       else
@@ -44,7 +52,7 @@ module HarborUtils
       patch = find_patch(today, target_dir)
       new_patch = patch + 1
       check_dir "#{target_dir}"
-      save_to = "#{target_dir}/#{today}.#{new_patch}.images.yml"
+      save_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
 
       if first_patch_today?(patch)
         puts "  first patch today 🎂 , party starts now! 🎉🎉🎉 , patch no #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
@@ -52,7 +60,7 @@ module HarborUtils
         puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
       end
 
-      yaml = make_yaml("#{today}.#{new_patch}")
+      yaml = make_yaml("#{today}.#{new_patch}", patch_snapshot_id, patch_repositories)
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
 
@@ -113,10 +121,23 @@ module HarborUtils
       end
     end
 
-    def make_yaml(snapshot_id)
+    def make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       images = []
+      
+      patch_only = true if (patch_snapshot_id && patch_repositories)
+      
+      if patch_only
+        snapshot_digests = load_digests_from_snapshot(patch_snapshot_id)
+        repos_only = patch_repositories.split(",")
+      end
+
       each_bundles do |bundle|
         bundle.each_repos do |repos|
+          digest = repos.detected_digest
+          if patch_only && snapshot_digests.has_key?(repos.name)
+            # version from patched snapshot! patch only repos from repos_only array! (unless rule)
+            digest = snapshot_digests[repos.name] unless repos_only.include?(repos.name)
+          end
           uri = URI("#{repos.image_url}")
           images << { "name" => repos.name,
                       "tag" => repos.tag,
@@ -125,7 +146,7 @@ module HarborUtils
                       "scheme" => uri.scheme,
                       "project" => repos.project,
                       "repository" => repos.repository,
-                      "digest" => repos.detected_digest,
+                      "digest" => digest,
                       "detected" => repos.detected? }
         end
       end
@@ -133,6 +154,20 @@ module HarborUtils
         "utc" => DateTime.now.new_offset(0).to_s,
         "snapshot_id" => snapshot_id,
         "images" => images}.to_yaml
+    end
+
+    def load_digests_from_snapshot(patch_snapshot_id)
+      result = {}
+      if patch_snapshot_id
+        snapshot_file = "#{Dir.getwd}/#{@target}/#{@name}/#{patch_snapshot_id}.#{IMAGES_EXTENSION}"
+        snapshot_data = YAML.load_file(snapshot_file)
+        if snapshot_data.has_key? "images"
+          snapshot_data["images"].each do |img|
+            result[img["name"]] = img["digest"]
+          end
+        end
+      end
+      result
     end
 
     def find_patch(day, target_dir)

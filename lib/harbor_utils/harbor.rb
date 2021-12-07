@@ -98,9 +98,10 @@ module HarborUtils
         api_artifacts(@project_name, @repository_name)
         print_artifacts(@project_name, @repository_name)
       when :snapshot
-        config_file = @args[:config_file]
+        bundle_name = @args[:bundle]
         api_projects()
-        SnapLoader::with_config(config_file) do |config|
+
+        SnapLoader::with_config(bundle_name) do |config|
           puts "Bundles:"
           completed = true
           config.each_bundles_with_index do |bundle, i|
@@ -125,7 +126,7 @@ module HarborUtils
             end
           end
           config.completed(completed)
-          config.save()
+          config.save(@args)
         end
       when :transfer
         # ./bin/harbor_utils transfer

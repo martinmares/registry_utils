@@ -5,16 +5,16 @@ module HarborUtils
   class SnapLoader
     attr_reader :config
 
-    def initialize(config_file_name)
-      @config = SnapConfig.new(config_file_name)
+    def initialize(bundle_name)
+      @config = SnapConfig.new(bundle_name)
     end
 
     def snap()
       puts "Create snapshot..."
     end
 
-    def self.with_config(config_file_name)
-      s = self.new(config_file_name)
+    def self.with_config(bundle_name)
+      s = self.new(bundle_name)
       yield(s.config)
     end
   end
