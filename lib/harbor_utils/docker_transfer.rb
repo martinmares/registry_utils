@@ -51,7 +51,6 @@ module HarborUtils
 
         if @latest_tag
           puts "  🎁 latest"
-          local_img = Docker::Image.create('fromImage' => img.docker_img_name)
           local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
           docker_auth(@target_docker)
           puts "  👉 #{remote_img_name}:latest"
