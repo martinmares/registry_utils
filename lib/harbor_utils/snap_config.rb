@@ -60,9 +60,11 @@ module HarborUtils
         puts "  `hallelujah`, 👏 found patch no #{Paint[patch, :cyan]}, 💪 upgrading to #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
       end
 
-      yaml = make_yaml("#{today}.#{new_patch}", patch_snapshot_id, patch_repositories)
+      snapshot_id = "#{today}.#{new_patch}"
+      yaml = make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
+      puts "  🎉 snapshot id: #{Paint[snapshot_id, :yellow]}"
 
       if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)
