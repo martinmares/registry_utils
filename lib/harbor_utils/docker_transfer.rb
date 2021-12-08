@@ -88,7 +88,7 @@ module HarborUtils
     private
 
     def print_result(result)
-      if push_result
+      if result
         puts "     ✅  Everything is OK, `meow` 😺"
       else
         puts "     ❌  I'm crying, `meow` 😿"
