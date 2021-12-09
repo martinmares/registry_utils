@@ -12,6 +12,7 @@ module HarborUtils
     CALENDAR_PATTERN = "%Y.%m.%d"
     IMAGES_EXTENSION = "images.yml"
     LATEST_IMAGES_FILENAME = "latest.#{IMAGES_EXTENSION}"
+    LATEST_SNAP_ID_FILENAME = "latest.snapshot_id"
     SNAPSHOTS_DIR = "snapshots"
     FAILED_SNAPSHOTS_SUBDIR = "failed"
     BUNDLE_CONF_DIR = "conf"
@@ -53,6 +54,7 @@ module HarborUtils
       new_patch = patch + 1
       check_dir "#{target_dir}"
       save_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
+      save_snap_id_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
 
       if first_patch_today?(patch)
         puts "  first patch today 🎂 , party starts now! 🎉🎉🎉 , patch no #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
@@ -64,7 +66,8 @@ module HarborUtils
       yaml = make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
-      puts "  🎉 snapshot id: #{Paint[snapshot_id, :yellow]}"
+      File.write(LATEST_SNAP_ID_FILENAME, snapshot_id)
+      puts "  🎉 snapshot id #{Paint[snapshot_id, :yellow]}, saved to file #{Paint[save_snap_id_to, :cyan]}"
 
       if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)

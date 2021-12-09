@@ -32,15 +32,15 @@ module HarborUtils
     end
 
     def transfer_images
+      docker_auth(@docker)
+      docker_auth(@target_docker)
       @images.each_with_index do |img, i|
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
-        docker_auth(@docker)
         puts "  👈 #{img.docker_img_name}"
         local_img = Docker::Image.create('fromImage' => img.docker_img_name)
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
         puts "  🎁 #{img.snapshot_id}"
         local_img.tag('repo' => remote_img_name, 'tag' => img.snapshot_id , force: true)
-        docker_auth(@target_docker)
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{img.snapshot_id}")
         print_result(push_result)
@@ -48,7 +48,6 @@ module HarborUtils
         if @latest_tag
           puts "  🎁 latest"
           local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
-          docker_auth(@target_docker)
           puts "  👉 #{remote_img_name}:latest"
           push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest")
           print_result(push_result)
@@ -99,6 +98,7 @@ module HarborUtils
       Docker.authenticate!('username' => endpoint.user, \
                            'password' => endpoint.pass, \
                            'serveraddress' => endpoint.url)
+      puts "🔑 authenticated to #{Paint[endpoint.url, :cyan]} with user #{endpoint.user}!"
     end
 
     def snapshot_file_name
