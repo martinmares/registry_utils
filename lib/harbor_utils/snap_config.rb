@@ -54,7 +54,7 @@ module HarborUtils
       new_patch = patch + 1
       check_dir "#{target_dir}"
       save_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
-      save_snap_id_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
+      save_snap_id_to = "#{target_dir}/#{LATEST_SNAP_ID_FILENAME}"
 
       if first_patch_today?(patch)
         puts "  first patch today 🎂 , party starts now! 🎉🎉🎉 , patch no #{Paint[new_patch, :green]}, for pattern 📅 #{Paint[today, :magenta]}"
@@ -66,7 +66,7 @@ module HarborUtils
       yaml = make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       File.write(save_to, yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
-      File.write(LATEST_SNAP_ID_FILENAME, snapshot_id)
+      File.write(save_snap_id_to, snapshot_id)
       puts "  🎉 snapshot id #{Paint[snapshot_id, :yellow]}, saved to file #{Paint[save_snap_id_to, :cyan]}"
 
       if completed?
