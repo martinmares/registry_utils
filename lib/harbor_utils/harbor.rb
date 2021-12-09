@@ -99,6 +99,7 @@ module HarborUtils
         print_artifacts(@project_name, @repository_name)
       when :snapshot
         bundle_name = @args[:bundle]
+        puts "Bundle name #{Paint[bundle_name, :yellow]}"
         api_projects()
 
         SnapLoader::with_config(bundle_name) do |config|
