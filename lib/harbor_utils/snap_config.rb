@@ -5,6 +5,7 @@ module HarborUtils
   require "fileutils"
   require "date"
   require 'uri'
+  require_relative "snap_snapshot"
 
   class SnapConfig
     attr_reader :file_name, :target
@@ -127,38 +128,34 @@ module HarborUtils
     end
 
     def make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
-      images = []
-      
       patch_only = true if (patch_snapshot_id && patch_repositories)
       
       if patch_only
-        snapshot_digests = load_digests_from_snapshot(patch_snapshot_id)
+        old_digests = load_digests_from_snapshot(patch_snapshot_id)
         repos_only = patch_repositories.split(",")
       end
 
+      snapshot = SnapSnapshot.new(@bundle_name, snapshot_id, patch_snapshot_id, patch_repositories)
       each_bundles do |bundle|
         bundle.each_repos do |repos|
           digest = repos.detected_digest
-          if patch_only && snapshot_digests.has_key?(repos.name)
-            # version from patched snapshot! patch only repos from repos_only array! (unless rule)
-            digest = snapshot_digests[repos.name] unless repos_only.include?(repos.name)
+          patched = false
+          if patch_only && old_digests.has_key?(repos.name)
+            if repos_only.include?(repos.name)
+              patched = true
+            else
+              # version from patched snapshot (old)! patch only repos from repos_only array!
+              digest = old_digests[repos.name]
+            end
           end
           uri = URI("#{repos.image_url}")
-          images << { "name" => repos.name,
-                      "tag" => repos.tag,
-                      "host" => uri.host,
-                      "port" => uri.port,
-                      "scheme" => uri.scheme,
-                      "project" => repos.project,
-                      "repository" => repos.repository,
-                      "digest" => digest,
-                      "detected" => repos.detected? }
+          snapshot.add_image(repos.name, repos.tag,
+                             uri.host, uri.port, uri.scheme,
+                             repos.project, repos.repository, digest, repos.detected?,
+                             patched)
         end
       end
-      { "timestamp" => DateTime.now.to_s,
-        "utc" => DateTime.now.new_offset(0).to_s,
-        "snapshot_id" => snapshot_id,
-        "images" => images}.to_yaml
+      snapshot.to_yaml
     end
 
     def load_digests_from_snapshot(patch_snapshot_id)
