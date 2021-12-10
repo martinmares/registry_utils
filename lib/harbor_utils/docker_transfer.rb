@@ -6,13 +6,15 @@ module HarborUtils
   require "awesome_print"
   require "json"
   require_relative "snap_config"
+  require_relative "snap_snapshot"
 
   class DockerTransfer
     attr_reader :docker, :docker_target, :docker_api
 
     def initialize(args)
       @bundle = args[:bundle]
-      @snapshot = args[:snapshot]
+      @snapshot_id = args[:snapshot_id]
+      @target_bundle = args[:target_bundle]
       @target_project = args[:target_project]
       @target_url = args[:target_url]
       @target_user = args[:target_user]
@@ -20,9 +22,11 @@ module HarborUtils
       @docker_api = args[:docker_api]
       @latest_tag = args[:latest_tag] || false
       ENV["DOCKER_URL"] = @docker_api # https://github.com/swipely/docker-api
+      @docker_fake = args[:docker_fake] || false
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
       @target_docker = DockerEndpoit.new(args[:target_url], args[:target_user], args[:target_pass])
       @images = []
+      @patch_only = false
     end
 
     def self.open_with(args)
@@ -32,59 +36,95 @@ module HarborUtils
     end
 
     def transfer_images
-      docker_auth(@docker)
-      docker_auth(@target_docker)
-      @images.each_with_index do |img, i|
+      docker_auth(@docker) unless @docker_fake
+      docker_auth(@target_docker) unless @docker_fake
+
+      snap = SnapSnapshot.new(@target_bundle, @snapshot_id)
+      
+      if patch_only?
+        process_images = @images.select { |img| img.patched? }
+        puts "Patch only `abracadabra` 🪄"
+      else
+        process_images = @images
+      end
+
+      process_images.each_with_index do |img, i|
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
         puts "  👈 #{img.docker_img_name}"
-        local_img = Docker::Image.create('fromImage' => img.docker_img_name)
+        unless @docker_fake
+          local_img = Docker::Image.create('fromImage' => img.docker_img_name)
+        end
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
         puts "  🎁 #{img.snapshot_id}"
-        local_img.tag('repo' => remote_img_name, 'tag' => img.snapshot_id , force: true)
+
+        transfer_tag = img.snapshot_id
+
+        local_img.tag('repo' => remote_img_name, 'tag' => transfer_tag, force: true) unless @docker_fake
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
-        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{img.snapshot_id}")
+        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{transfer_tag}") unless @docker_fake
+        
+        # target_sha_digest = push_result.json["Id"] if push_result
+        target_sha_digest = parse_digest(push_result, img.docker_img_name) if push_result
+
+        # to_docker_image = docker_image.push(nil, repo_tag: new_image_name)
+        # to_image_id = to_docker_image.json['Id']
+        # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
+
+        uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
+        snap.add_image(img.name, transfer_tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
         
         if @latest_tag
           puts "  🎁 latest"
-          local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true)
+          local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true) unless @docker_fake
           puts "  👉 #{remote_img_name}:latest"
-          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest")
+          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest") unless @docker_fake
           print_result(push_result)
         end
 
-        local_img.remove(:force => true)
-
+        local_img.remove(:force => true) unless @docker_fake
         puts "\n"
       end
+      save_snap_to_file(snap)
     end
-    # docker pull registry.datalite.cz/tsm-cetin-release/snapshot/tsm-address-management@sha256:19b6b4c3248635171a2a3ef772416a82295a7f4858495b10d1dc67148157de73
+
 =begin
 
     images:
     - name: tsm-address-management
       tag: master
-      url: https://registry.datalite.cz
+      host: registry.datalite.cz
+      port: 443
+      scheme: https
       project: tsm
       repository: tsm-address-management
-      digest: sha256:f32840e0ecb110824be4ef24859c77e308929c109a740be60211fdfad2e16bc2
-      image_url: https://registry.datalite.cz/tsm/tsm-address-management
+      digest: sha256:e5612b8f850f3e5d305a788cca71752c7deb01075f9efb50306662b2cdb0c1b0
       detected: true
+      patched: true
 
 =end
 
     def load_snapshot
-      puts "Loading snapshot #{Paint[@snapshot, :magenta]} from directory #{Paint[snapshot_file_name, :yellow]}"
+      puts "Loading snapshot #{Paint[@snapshot_id, :magenta]} from directory #{Paint[snapshot_file_name, :yellow]}"
       snap = YAML.load_file(snapshot_file_name)
+      @patch_snapshot_id = snap["patch_snapshot_id"]
+      @patch_repositories = snap["patch_repositories"]
+      if @patch_snapshot_id && @patch_snapshot_id.size > 0
+        @patch_only = true
+      end
       if snap.has_key? "images"
         snap["images"].each do |img|
-          di = DockerImage.new(img["name"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"])
+          di = DockerImage.new(img["name"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"], img["patched"])
           @images << di
         end
       end
     end
 
     private
+
+    def patch_only?
+      @patch_only
+    end
 
     def print_result(result)
       if result
@@ -102,11 +142,35 @@ module HarborUtils
     end
 
     def snapshot_file_name
-      if @snapshot.downcase =~ /latest/
+      if @snapshot_id.downcase =~ /latest/
         "#{SnapConfig::SNAPSHOTS_DIR}/#{@bundle}/#{SnapConfig::LATEST_IMAGES_FILENAME}"
       else
-        "#{SnapConfig::SNAPSHOTS_DIR}/#{@bundle}/#{@snapshot}.#{SnapConfig::IMAGES_EXTENSION}"
+        "#{SnapConfig::SNAPSHOTS_DIR}/#{@bundle}/#{@snapshot_id}.#{SnapConfig::IMAGES_EXTENSION}"
       end
+    end
+
+    def save_snap_to_file(snap)
+      target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
+      SnapConfig::check_dir(target_dir)
+      save_to = "#{target_dir}/#{@snapshot_id}.#{SnapConfig::IMAGES_EXTENSION}"
+      File.write(save_to, snap.to_yaml)
+      puts "  💾 saved to file #{Paint[save_to, :cyan]}"
+    end
+
+    def parse_digest(push_result, tag)
+      repo_digests = push_result.json['RepoDigests']
+    
+      cnt = 0
+      idx = 0
+      repo_digests.each do |t|
+        idx = cnt if t[tag]
+        cnt += 1
+      end
+      digest = repo_digests[idx]
+    
+      # trick!
+      result = (digest.reverse[0..digest.reverse.index(':') - 1]).reverse
+      "sha256:#{result}"
     end
 
   end
@@ -122,8 +186,8 @@ module HarborUtils
   end
 
   class DockerImage
-    attr_accessor :name, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected
-    def initialize(name, snapshot_id, tag, host, port , scheme, project, repository, digest, detected)
+    attr_accessor :name, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected, :patched
+    def initialize(name, snapshot_id, tag, host, port , scheme, project, repository, digest, detected, patched)
       @name = name
       @snapshot_id = snapshot_id
       @tag = tag
@@ -134,6 +198,7 @@ module HarborUtils
       @repository = repository
       @digest = digest
       @detected = detected
+      @patched = patched
     end
 
     def docker_img_name
@@ -143,6 +208,10 @@ module HarborUtils
     def self.generate_docker_img_name(url, project, name)
       uri = URI("#{url}/#{project}/#{name}")
       "#{uri.host}:#{uri.port}#{uri.path}"
+    end
+
+    def patched?
+      @patched
     end
 
   end

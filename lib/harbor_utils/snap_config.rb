@@ -44,16 +44,16 @@ module HarborUtils
       end
       
       if completed?
-        target_dir = "#{@target}/#{@name}"
+        target_dir = "#{SNAPSHOTS_DIR}/#{@name}"
       else
-        target_dir = "#{@target}/#{@name}/#{FAILED_SNAPSHOTS_SUBDIR}"
+        target_dir = "#{SNAPSHOTS_DIR}/#{@name}/#{FAILED_SNAPSHOTS_SUBDIR}"
       end
 
       dt = DateTime.now
       today = dt.strftime("#{CALENDAR_PATTERN}")
       patch = find_patch(today, target_dir)
       new_patch = patch + 1
-      check_dir "#{target_dir}"
+      SnapConfig::check_dir "#{target_dir}"
       save_to = "#{target_dir}/#{today}.#{new_patch}.#{IMAGES_EXTENSION}"
       save_snap_id_to = "#{target_dir}/#{LATEST_SNAP_ID_FILENAME}"
 
@@ -89,6 +89,32 @@ module HarborUtils
       @completed
     end
 
+    def parse
+      @content = YAML.load_file(@file_name)
+      @name = @content["name"]
+      if @content.has_key? "bundles"
+        @content["bundles"].each do |bundle|
+          new_bundle = SnapBundle.new(bundle["name"], bundle["project"])
+          if bundle.has_key? "repositories"
+            bundle["repositories"].each do |repository|
+              new_repository = SnapRepository.new(repository["name"], repository["tag"], repository["keep_tag_as_is"])
+              new_bundle.add_repository(new_repository)
+            end
+          end
+          @bundles << new_bundle
+        end
+      end
+    end
+
+    def self.check_dir(dir_name)
+      if File.directory? dir_name
+        puts "  target 📁 #{Paint[dir_name, :green]} exists"
+      else
+        puts "  created target 📁 #{Paint[dir_name, :red]}"
+        FileUtils.mkdir_p dir_name
+      end
+    end
+
     private
 
     def first_patch_today?(patch)
@@ -109,29 +135,11 @@ module HarborUtils
       puts " _)"
     end
 
-    def parse
-      @content = YAML.load_file(@file_name)
-      @target = SNAPSHOTS_DIR
-      @name = @content["name"]
-      if @content.has_key? "bundles"
-        @content["bundles"].each do |bundle|
-          new_bundle = SnapBundle.new(bundle["name"], bundle["project"])
-          if bundle.has_key? "repositories"
-            bundle["repositories"].each do |repository|
-              new_repository = SnapRepository.new(repository["name"], repository["tag"], repository["keep_tag_as_is"])
-              new_bundle.add_repository(new_repository)
-            end
-          end
-          @bundles << new_bundle
-        end
-      end
-    end
-
     def make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       patch_only = true if (patch_snapshot_id && patch_repositories)
       
       if patch_only
-        old_digests = load_digests_from_snapshot(patch_snapshot_id)
+        old_snapshot = load_patch_from_snapshot(patch_snapshot_id)
         repos_only = patch_repositories.split(",")
       end
 
@@ -139,17 +147,21 @@ module HarborUtils
       each_bundles do |bundle|
         bundle.each_repos do |repos|
           digest = repos.detected_digest
+          repos.add_transfer_tag(snapshot_id)
+
           patched = false
-          if patch_only && old_digests.has_key?(repos.name)
+          
+          if patch_only && old_snapshot.has_key?(repos.name)
             if repos_only.include?(repos.name)
               patched = true
             else
               # version from patched snapshot (old)! patch only repos from repos_only array!
-              digest = old_digests[repos.name]
+              digest = old_snapshot[repos.name][:digest]
+              repos.add_transfer_tag(old_snapshot[repos.name][:transfer_tag])
             end
           end
           uri = URI("#{repos.image_url}")
-          snapshot.add_image(repos.name, repos.tag,
+          snapshot.add_image(repos.name, repos.tag, repos.transfer_tag,
                              uri.host, uri.port, uri.scheme,
                              repos.project, repos.repository, digest, repos.detected?,
                              patched)
@@ -158,14 +170,15 @@ module HarborUtils
       snapshot.to_yaml
     end
 
-    def load_digests_from_snapshot(patch_snapshot_id)
+    def load_patch_from_snapshot(patch_snapshot_id)
       result = {}
       if patch_snapshot_id
-        snapshot_file = "#{Dir.getwd}/#{@target}/#{@name}/#{patch_snapshot_id}.#{IMAGES_EXTENSION}"
+        snapshot_file = "#{Dir.getwd}/#{SNAPSHOTS_DIR}/#{@name}/#{patch_snapshot_id}.#{IMAGES_EXTENSION}"
         snapshot_data = YAML.load_file(snapshot_file)
         if snapshot_data.has_key? "images"
           snapshot_data["images"].each do |img|
-            result[img["name"]] = img["digest"]
+            transfer_tag = img["transfer_tag"] || patch_snapshot_id
+            result[img["name"]] = {digest: img["digest"], transfer_tag: transfer_tag}
           end
         end
       end
@@ -183,15 +196,6 @@ module HarborUtils
       end
       result = patches.max if patches.size > 0
       result
-    end
-
-    def check_dir(dir_name)
-      if File.directory? dir_name
-        puts "  target 📁 #{Paint[dir_name, :green]} exists"
-      else
-        puts "  created target 📁 #{Paint[dir_name, :red]}"
-        FileUtils.mkdir_p dir_name
-      end
     end
 
   end
@@ -219,15 +223,16 @@ module HarborUtils
   end
 
   class SnapRepository
-    attr_reader :name, :tag, :keep_tag_as_is, :url, :project, :repository, :detected_digest
+    attr_reader :name, :tag, :keep_tag_as_is, :url, :project, :repository, :detected_digest, :transfer_tag
 
     def initialize(name, tag, keep_tag_as_is)
       @name = name
       @tag = tag
+      @transfer_tag = nil
       @keep_tag_as_is = keep_tag_as_is
       @keep_tag_as_is |= false
       @detected = false
-      @detected_digest = ""
+      @detected_digest = nil
     end
 
     def add_detected_digest(digest)
@@ -238,6 +243,10 @@ module HarborUtils
       @url = url
       @project = project
       @repository = repository
+    end
+
+    def add_transfer_tag(transfer_tag)
+      @transfer_tag = transfer_tag
     end
 
     def image_url

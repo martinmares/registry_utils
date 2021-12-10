@@ -5,7 +5,7 @@ module HarborUtils
 
   class SnapSnapshot
 
-    def initialize(bundle, snapshot_id, patch_snapshot_id, patch_repositories)
+    def initialize(bundle, snapshot_id, patch_snapshot_id=nil, patch_repositories=nil)
       @timestamp = DateTime.now.to_s
       @utc = DateTime.now.new_offset(0).to_s
       @bundle = bundle
@@ -15,8 +15,8 @@ module HarborUtils
       @images = []
     end
 
-    def add_image(name, tag, host, port, scheme, project, repository, digest, detected, patched)
-      @images << SnapImage.new(name, tag, host, port, scheme, project, repository, digest, detected, patched)
+    def add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
+      @images << SnapImage.new(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
     end
 
     def to_yaml
@@ -40,9 +40,10 @@ module HarborUtils
   end
 
   class SnapImage
-    def initialize(name, tag, host, port, scheme, project, repository, digest, detected, patched)
+    def initialize(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
       @tag = tag
+      @transfer_tag = transfer_tag
       @host = host
       @port = port
       @scheme = scheme
@@ -54,18 +55,22 @@ module HarborUtils
     end
 
     def to_yaml
+      result = 
       {
         "name" => @name,
         "tag" => @tag,
+        "transfer_tag" => @transfer_tag,
         "host" => @host,
         "port" => @port,
         "scheme" => @scheme,
         "project" => @project,
         "repository" => @repository,
         "digest" => @digest,
-        "detected" => @detected,
-        "patched" => @patched
       }
+      result["detected"] if @detected
+      result["patched"] if @patched
+
+      result
     end
   end
 

@@ -7,6 +7,7 @@ module HarborUtils
 
     def initialize(bundle_name)
       @config = SnapConfig.new(bundle_name)
+      @config.parse()
     end
 
     def snap()
