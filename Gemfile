@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gem "awesome_print"
 gem "ruby-progressbar"
-gem "json"
+gem "json", git: "https://github.com/flori/json"
 gem "optimist"
 gem "fileutils"
 gem "paint"

@@ -1,3 +1,9 @@
+GIT
+  remote: https://github.com/flori/json
+  revision: 75ada77b9664c1d1f0ae6e210f8db4919849561e
+  specs:
+    json (2.6.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -5,7 +11,7 @@ GEM
     docker-api (2.2.0)
       excon (>= 0.47.0)
       multi_json
-    excon (0.88.0)
+    excon (0.89.0)
     faraday (1.8.0)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -27,7 +33,6 @@ GEM
     faraday-rack (1.0.0)
     fileutils (1.6.0)
     highline (2.0.3)
-    json (2.6.1)
     multi_json (1.15.0)
     multipart-post (2.1.1)
     optimist (3.0.1)
@@ -44,7 +49,7 @@ DEPENDENCIES
   faraday
   fileutils
   highline
-  json
+  json!
   optimist
   paint
   ruby-progressbar
