@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
 
   require "yaml"
   require "awesome_print"

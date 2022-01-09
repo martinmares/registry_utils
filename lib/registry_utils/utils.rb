@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
 
   require "json"
   require "awesome_print"

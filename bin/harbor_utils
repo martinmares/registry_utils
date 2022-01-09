@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-require_relative "../lib/harbor_utils/main"
-
-main = HarborUtils::Main.new
-main.run()

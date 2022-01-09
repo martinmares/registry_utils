@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
 
   require 'faraday'
   require 'base64'
@@ -16,7 +16,7 @@ module HarborUtils
       @connection = Faraday.new(
         url: @url,
         headers: {"Accept" => "application/json",
-                  "User-Agent" => "Ruby (Faraday client); HarborUtils module",
+                  "User-Agent" => "Ruby (Faraday client); RegistryUtils module",
                   "Authorization" => basic_auth}
       )
       puts "Connected to: #{url}, as user: #{user}"

@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
   class Main
 
     attr_reader :args, :command

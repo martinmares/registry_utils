@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
 
   require "awesome_print"
   require "paint"
@@ -20,7 +20,7 @@ module HarborUtils
     def initialize(args)
       @args = args
       @url = @args[:url]
-      @client = HarborUtils::Client.new(@url, @args[:user], @args[:pass])
+      @client = RegistryUtils::Client.new(@url, @args[:user], @args[:pass])
       @project_name = @args[:project_name]
       @repository_name = @args[:repository_name]
       @keep_last_n = @args[:keep_last_n]
@@ -130,7 +130,7 @@ module HarborUtils
           config.save(@args)
         end
       when :transfer
-        # ./bin/harbor_utils transfer
+        # ./bin/registry_utils transfer
         #    from ==>   -l $HARBOR_URL -u $HARBOR_USER -e $HARBOR_PASS -b tsm-cetin-release -s latest
         #    to   ==>   -t $HARBOR_URL -n $HARBOR_USER -w $HARBOR_PASS -p tsm-cetin-release
         DockerTransfer::open_with(@args) do |docker|

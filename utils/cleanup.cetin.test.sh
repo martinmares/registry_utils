@@ -21,29 +21,29 @@ export HARBOR_PASS="$pass"
 
 export SSL_CERT_FILE="../secrets/cetin.root.cer"
 
-../bin/harbor_utils health -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS"
+../bin/registry_utils health -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS"
 
 # export PROJECT="tsm-test"
 # echo ""
 # read -rp "Press [Enter] key to start cleanup '${PROJECT}'..."
 # echo ""
-# ../bin/harbor_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
+# ../bin/registry_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
 # 
 # export PROJECT="tsm-ref"
 # echo ""
 # read -rp "Press [Enter] key to start cleanup '${PROJECT}'..."
 # echo ""
-# ../bin/harbor_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
+# ../bin/registry_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
 # 
 # export PROJECT="tsm-part"
 # echo ""
 # read -rp "Press [Enter] key to start cleanup '${PROJECT}'..."
 # echo ""
-# ../bin/harbor_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
+# ../bin/registry_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
 
 export PROJECT="tsm-prod"
 echo ""
 read -rp "Press [Enter] key to start cleanup '${PROJECT}'..."
 echo ""
-../bin/harbor_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
+../bin/registry_utils cleanup -u "$HARBOR_URL" -s "$HARBOR_USER" -e "$HARBOR_PASS" -p "$PROJECT" -k "$RETENTION"
 

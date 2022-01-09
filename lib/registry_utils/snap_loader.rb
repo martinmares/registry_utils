@@ -1,4 +1,4 @@
-module HarborUtils
+module RegistryUtils
 
   require_relative "snap_config"
 

@@ -1,4 +1,4 @@
-# harbor_utils
+# registry_utils
 
 TODO: Write a description here
 
@@ -16,7 +16,7 @@ TODO: Write development instructions here
 
 ## Contributing
 
-1. Fork it (<https://github.com/martinmares/harbor_utils/fork>)
+1. Fork it (<https://github.com/martinmares/docker_reg_utils/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
