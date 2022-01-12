@@ -159,6 +159,10 @@ module RegistryUtils
       SnapConfig::check_dir(target_dir)
       file_name = @snapshot_id
       file_name = add_tag if add_tag
+
+      snap["from_snapshot_id"] = snap["snapshot_id"]
+      snap["snapshot_id"] = add_tag if add_tag
+
       save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
