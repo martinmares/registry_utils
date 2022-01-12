@@ -40,7 +40,7 @@ module RegistryUtils
       docker_auth(@target_docker) unless @docker_fake
 
       snap = SnapSnapshot.new(@target_bundle, @snapshot_id)
-      
+
       if patch_only?
         process_images = @images.select { |img| img.patched? }
         puts "Patch only `abracadabra` 🪄"
@@ -62,7 +62,7 @@ module RegistryUtils
         local_img.tag('repo' => remote_img_name, 'tag' => tag, force: true) unless @docker_fake
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
-        
+
         # target_sha_digest = push_result.json["Id"] if push_result
         target_sha_digest = parse_digest(push_result, img.docker_img_name) if push_result
 
@@ -76,7 +76,7 @@ module RegistryUtils
         uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
         snap.add_image(img.name, tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
-        
+
         if @add_tag
           puts "  🎁 add tag #{@add_tag}"
           local_img.tag('repo' => remote_img_name, 'tag' => "#{@add_tag}" , force: true) unless @docker_fake
@@ -167,7 +167,7 @@ module RegistryUtils
 
     def parse_digest(push_result, tag)
       repo_digests = push_result.json['RepoDigests']
-    
+
       cnt = 0
       idx = 0
       repo_digests.each do |t|
@@ -175,7 +175,7 @@ module RegistryUtils
         cnt += 1
       end
       digest = repo_digests[idx]
-    
+
       # trick!
       result = (digest.reverse[0..digest.reverse.index(':') - 1]).reverse
       "sha256:#{result}"
