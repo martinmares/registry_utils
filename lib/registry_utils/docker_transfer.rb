@@ -88,7 +88,7 @@ module RegistryUtils
         local_img.remove(:force => true) unless @docker_fake
         puts "\n"
       end
-      save_transfer_to_file(snap) unless @docker_fake
+      save_transfer_to_file(snap, @add_tag) unless @docker_fake
     end
 
 =begin
@@ -152,10 +152,12 @@ module RegistryUtils
       end
     end
 
-    def save_transfer_to_file(snap)
+    def save_transfer_to_file(snap, add_tag)
       target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
-      save_to = "#{target_dir}/#{@snapshot_id}.#{SnapConfig::IMAGES_EXTENSION}"
+      file_name = @snapshot_id
+      file_name = add_tag if add_tag
+      save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
     end
