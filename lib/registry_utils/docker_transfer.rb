@@ -17,6 +17,7 @@ module RegistryUtils
       @target_bundle = args[:target_bundle]
       @target_project = args[:target_project]
       @target_url = args[:target_url]
+      @download_by = args[:download_by] || :sha256
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
@@ -52,7 +53,11 @@ module RegistryUtils
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
         puts "  👈 #{img.docker_img_name}"
         unless @docker_fake
-          local_img = Docker::Image.create('fromImage' => img.docker_img_name)
+          if @download_by == :tag
+            local_img = Docker::Image.create('fromImage' => img.docker_img_name_by_tag)
+          elsif @download_by == :sha256
+            local_img = Docker::Image.create('fromImage' => img.docker_img_name)
+          end
         end
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
         puts "  🎁 #{img.snapshot_id}"
@@ -211,6 +216,10 @@ module RegistryUtils
 
     def docker_img_name
       "#{@host}:#{@port}/#{@project}/#{@repository}@#{@digest}"
+    end
+
+    def docker_img_name_by_tag
+      "#{@host}:#{@port}/#{@project}/#{@repository}:#{@tag}"
     end
 
     def self.generate_docker_img_name(url, project, name)
