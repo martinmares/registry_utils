@@ -19,6 +19,11 @@ module RegistryUtils
       @images << SnapImage.new(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
     end
 
+    def from_snapshot_id(new_snap_id)
+      @from_snapshot_id = @snapshot_id
+      @snapshot_id = new_snap_id
+    end
+
     def to_yaml
       result = {}
       images = []
