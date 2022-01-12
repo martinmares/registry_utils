@@ -153,7 +153,7 @@ module RegistryUtils
     end
 
     def save_transfer_to_file(snap)
-      target_dir = "#{SnapConfig::TRANSFERS_DIR}/#{@target_bundle}"
+      target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
       save_to = "#{target_dir}/#{@snapshot_id}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_yaml)
