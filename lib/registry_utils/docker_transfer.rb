@@ -17,7 +17,7 @@ module RegistryUtils
       @target_bundle = args[:target_bundle]
       @target_project = args[:target_project]
       @target_url = args[:target_url]
-      @download_by = args[:download_by] || :sha256
+      @download_by = args[:download_by] || "sha256"
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
@@ -53,9 +53,9 @@ module RegistryUtils
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
         puts "  👈 #{img.docker_img_name}"
         unless @docker_fake
-          if @download_by == :tag
+          if @download_by == "tag"
             local_img = Docker::Image.create('fromImage' => img.docker_img_name_by_tag)
-          elsif @download_by == :sha256
+          elsif @download_by == "sha256"
             local_img = Docker::Image.create('fromImage' => img.docker_img_name)
           end
         end
