@@ -20,7 +20,7 @@ module RegistryUtils
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
-      @latest_tag = args[:latest_tag] || false
+      @add_tag = args[:add_tag] || nil
       ENV["DOCKER_URL"] = @docker_api # https://github.com/swipely/docker-api
       @docker_fake = args[:docker_fake] || false
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
@@ -74,18 +74,18 @@ module RegistryUtils
         snap.add_image(img.name, transfer_tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
         
-        if @latest_tag
-          puts "  🎁 latest"
-          local_img.tag('repo' => remote_img_name, 'tag' => "latest" , force: true) unless @docker_fake
-          puts "  👉 #{remote_img_name}:latest"
-          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:latest") unless @docker_fake
+        if @add_tag
+          puts "  🎁 add tag #{@add_tag}"
+          local_img.tag('repo' => remote_img_name, 'tag' => "#{@add_tag}" , force: true) unless @docker_fake
+          puts "  👉 #{remote_img_name}:#{@add_tag}"
+          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{@add_tag}") unless @docker_fake
           print_result(push_result)
         end
 
         local_img.remove(:force => true) unless @docker_fake
         puts "\n"
       end
-      save_snap_to_file(snap)
+      save_transfer_to_file(snap) unless @docker_fake
     end
 
 =begin
@@ -149,8 +149,8 @@ module RegistryUtils
       end
     end
 
-    def save_snap_to_file(snap)
-      target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
+    def save_transfer_to_file(snap)
+      target_dir = "#{SnapConfig::TRANSFERS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
       save_to = "#{target_dir}/#{@snapshot_id}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_yaml)

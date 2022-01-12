@@ -145,7 +145,7 @@ module RegistryUtils
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
             opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-a"
             opt :docker_fake, "Fake only Docker API?", type: :boolean, default: false, required: false, short: "-o"
-            opt :latest_tag, "Add latest tag (target)", type: :boolean, required: false, short: "-z"
+            opt :add_tag, "Add tag (for example 'target')", type: :string, required: false, short: "-z"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"

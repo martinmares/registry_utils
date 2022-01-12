@@ -15,6 +15,7 @@ module RegistryUtils
     LATEST_IMAGES_FILENAME = "latest.#{IMAGES_EXTENSION}"
     LATEST_SNAP_ID_FILENAME = "latest.snapshot_id"
     SNAPSHOTS_DIR = "snapshots"
+    TRANSFERS_DIR = "transfers"
     FAILED_SNAPSHOTS_SUBDIR = "failed"
     BUNDLE_CONF_DIR = "conf"
 
