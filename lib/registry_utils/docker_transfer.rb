@@ -110,6 +110,8 @@ module RegistryUtils
     def load_snapshot
       puts "Loading snapshot #{Paint[@snapshot_id, :magenta]} from directory #{Paint[snapshot_file_name, :yellow]}"
       snap = YAML.load_file(snapshot_file_name)
+      @snapshot_id = snap["snapshot_id"]
+      puts "Loaded snapshot #{Paint[@snapshot_id, :green]}"
       @patch_snapshot_id = snap["patch_snapshot_id"]
       @patch_repositories = snap["patch_repositories"]
       if @patch_snapshot_id && @patch_snapshot_id.size > 0
