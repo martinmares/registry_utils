@@ -36,6 +36,7 @@ module RegistryUtils
         "bundle" => @bundle,
         "snapshot_id" => @snapshot_id
       }
+      result ["from_snapshot_id"] = @from_snapshot_id if @from_snapshot_id
       result["patch_snapshot_id"] = @patch_snapshot_id if @patch_snapshot_id
       result["patch_repositories"] = @patch_repositories if @patch_repositories
       result["images"] = images if images
