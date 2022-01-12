@@ -57,11 +57,11 @@ module RegistryUtils
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
         puts "  🎁 #{img.snapshot_id}"
 
-        transfer_tag = img.snapshot_id
+        tag = img.snapshot_id
 
-        local_img.tag('repo' => remote_img_name, 'tag' => transfer_tag, force: true) unless @docker_fake
+        local_img.tag('repo' => remote_img_name, 'tag' => tag, force: true) unless @docker_fake
         puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
-        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{transfer_tag}") unless @docker_fake
+        push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
         
         # target_sha_digest = push_result.json["Id"] if push_result
         target_sha_digest = parse_digest(push_result, img.docker_img_name) if push_result
@@ -70,8 +70,11 @@ module RegistryUtils
         # to_image_id = to_docker_image.json['Id']
         # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
 
+        transfer_tag = tag
+        transfer_tag = @add_tag if @add_tag
+
         uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
-        snap.add_image(img.name, transfer_tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+        snap.add_image(img.name, tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
         
         if @add_tag

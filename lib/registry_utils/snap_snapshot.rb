@@ -20,7 +20,7 @@ module RegistryUtils
     end
 
     def to_yaml
-      reqult = {}
+      result = {}
       images = []
       @images.each do |image|
         images << image.to_yaml
