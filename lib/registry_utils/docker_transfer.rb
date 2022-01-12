@@ -51,7 +51,17 @@ module RegistryUtils
 
       process_images.each_with_index do |img, i|
         puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
-        puts "  👈 #{img.docker_img_name}"
+
+        pull_image =
+          case @download_by
+          when "tag"
+            img.docker_img_name_by_tag
+          when "sha256"
+            img.docker_img_name
+          end
+
+        puts "  👈 #{pull_image}"
+        
         unless @docker_fake
           if @download_by == "tag"
             local_img = Docker::Image.create('fromImage' => img.docker_img_name_by_tag)
