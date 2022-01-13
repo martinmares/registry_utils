@@ -8,7 +8,7 @@ module RegistryUtils
   require_relative "snap_snapshot"
 
   class SnapConfig
-    attr_reader :file_name, :target
+    attr_reader :file_name, :target, :bundles
 
     CALENDAR_PATTERN = "%Y.%m.%d"
     IMAGES_EXTENSION = "images.yml"
