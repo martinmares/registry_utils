@@ -146,7 +146,7 @@ module RegistryUtils
             opt :target_project, "Project name (target)", type: :string, required: true, short: "-p"
             opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-d"
             opt :docker_fake, "Fake only Docker API?", type: :boolean, default: false, required: false, short: "-o"
-            opt :add_tag, "Add tag (for example 'target')", type: :string, required: false, short: "-a"
+            opt :add_tag, "Add tag (for example 'latest')", type: :string, required: false, short: "-a"
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"
