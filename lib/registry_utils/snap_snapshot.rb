@@ -15,20 +15,22 @@ module RegistryUtils
       @images = []
     end
 
-    def add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
-      @images << SnapImage.new(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
+    def add_image(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
+      @images << SnapImage.new(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
     end
 
-    def from_snapshot_id(new_snap_id)
-      @from_snapshot_id = @snapshot_id
-      @snapshot_id = new_snap_id
+    def add_from_snapshot_id(new_snap_id)
+      if new_snap_id
+        @from_snapshot_id = @snapshot_id
+        @snapshot_id = new_snap_id
+      end
     end
 
-    def to_yaml
+    def to_ruby_obj
       result = {}
       images = []
       @images.each do |image|
-        images << image.to_yaml
+        images << image.to_ruby_obj
       end
       result = {
         "timestamp" => @timestamp,
@@ -36,20 +38,20 @@ module RegistryUtils
         "bundle" => @bundle,
         "snapshot_id" => @snapshot_id
       }
-      result ["from_snapshot_id"] = @from_snapshot_id if @from_snapshot_id
+      result["from_snapshot_id"] = @from_snapshot_id if @from_snapshot_id
       result["patch_snapshot_id"] = @patch_snapshot_id if @patch_snapshot_id
       result["patch_repositories"] = @patch_repositories if @patch_repositories
       result["images"] = images if images
-      result.to_yaml
+      result
     end
 
   end
 
   class SnapImage
-    def initialize(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
+    def initialize(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
       @tag = tag
-      @transfer_tag = transfer_tag
+      @transfer_tags = transfer_tags
       @host = host
       @port = port
       @scheme = scheme
@@ -60,12 +62,12 @@ module RegistryUtils
       @patched = patched
     end
 
-    def to_yaml
+    def to_ruby_obj
       result = 
       {
         "name" => @name,
         "tag" => @tag,
-        "transfer_tag" => @transfer_tag,
+        "transfer_tags" => @transfer_tags.dup,
         "host" => @host,
         "port" => @port,
         "scheme" => @scheme,

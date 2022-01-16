@@ -36,10 +36,10 @@ module RegistryUtils
     end
 
     def save(args)
-      if args[:patch_snapshot_id] && args[:patch_repositories]
+      if args[:patch_snapshot_id] && args[:patch_repository]
         puts "\nSaving now ... (patch only)"
         patch_snapshot_id = args[:patch_snapshot_id]
-        patch_repositories = args[:patch_repositories]
+        patch_repositories = args[:patch_repository]
       else
         puts "\nSaving now ..."
       end
@@ -168,7 +168,7 @@ module RegistryUtils
                              patched)
         end
       end
-      snapshot.to_yaml
+      snapshot.to_ruby_obj.to_yaml
     end
 
     def load_patch_from_snapshot(patch_snapshot_id)

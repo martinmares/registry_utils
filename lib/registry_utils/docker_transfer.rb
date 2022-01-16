@@ -10,6 +10,7 @@ module RegistryUtils
 
   class DockerTransfer
     attr_reader :docker, :docker_target, :docker_api
+    attr_accessor :save_to_as
 
     def initialize(args)
       @bundle = args[:bundle]
@@ -21,7 +22,7 @@ module RegistryUtils
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
-      @add_tag = args[:add_tag] || nil
+      @add_tag ||= args[:add_tag]
       ENV["DOCKER_URL"] = @docker_api # https://github.com/swipely/docker-api
       @docker_fake = args[:docker_fake] || false
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
@@ -33,6 +34,7 @@ module RegistryUtils
     def self.open_with(args)
       c = DockerTransfer.new(args)
       c.load_snapshot()
+      c.save_to_as = args[:save_to_as]
       yield(c)
     end
 
@@ -70,12 +72,12 @@ module RegistryUtils
           end
         end
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts "  🎁 #{img.snapshot_id}"
+        puts "  🎁 tag #{Paint[img.snapshot_id, :magenta]}"
 
         tag = img.snapshot_id
 
         local_img.tag('repo' => remote_img_name, 'tag' => tag, force: true) unless @docker_fake
-        puts "  👉 #{remote_img_name}:#{img.snapshot_id}"
+        print "  👉 #{remote_img_name}:#{img.snapshot_id}"
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
 
         # target_sha_digest = push_result.json["Id"] if push_result
@@ -85,25 +87,27 @@ module RegistryUtils
         # to_image_id = to_docker_image.json['Id']
         # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
 
-        transfer_tag = tag
-        transfer_tag = @add_tag if @add_tag
+        transfer_tags = [tag]
+        transfer_tags = @add_tag if @add_tag
 
         uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
-        snap.add_image(img.name, tag, transfer_tag, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+        snap.add_image(img.name, tag, transfer_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
 
         if @add_tag
-          puts "  🎁 add tag #{@add_tag}"
-          local_img.tag('repo' => remote_img_name, 'tag' => "#{@add_tag}" , force: true) unless @docker_fake
-          puts "  👉 #{remote_img_name}:#{@add_tag}"
-          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{@add_tag}") unless @docker_fake
-          print_result(push_result)
+          @add_tag.each do |tag|
+            puts "  🎁 +tag #{Paint[tag, :magenta]}"
+            local_img.tag('repo' => remote_img_name, 'tag' => "#{tag}" , force: true) unless @docker_fake
+            print "  👉 #{remote_img_name}:#{tag}"
+            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
+            print_result(push_result)
+          end
         end
 
         local_img.remove(:force => true) unless @docker_fake
         puts "\n"
       end
-      save_transfer_to_file(snap, @add_tag) unless @docker_fake
+      save_transfer_to_file(snap) unless @docker_fake
     end
 
 =begin
@@ -148,9 +152,9 @@ module RegistryUtils
 
     def print_result(result)
       if result
-        puts "     ✅  Everything is OK, `meow` 😺"
+        puts " - ✅"
       else
-        puts "     ❌  I'm crying, `meow` 😿"
+        puts " - ❌"
       end
     end
 
@@ -169,14 +173,16 @@ module RegistryUtils
       end
     end
 
-    def save_transfer_to_file(snap, add_tag)
+    def save_transfer_to_file(snap)
       target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
-      file_name = @snapshot_id
-      file_name = add_tag if add_tag
-      snap.from_snapshot_id(add_tag) if add_tag
+      file_name = @save_to_as || @snapshot_id
+      ap @save_to_as
+      ap @snapshot_id
+      ap file_name
+      snap.add_from_snapshot_id(@save_to_as)
       save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
-      File.write(save_to, snap.to_yaml)
+      File.write(save_to, snap.to_ruby_obj.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
     end
 

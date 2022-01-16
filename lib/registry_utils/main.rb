@@ -129,7 +129,7 @@ module RegistryUtils
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :bundle, "Bundle name (must be located here: `conf/bundle.{bundle-name}.yml`)", type: :string, required: true, short: "-b"
             opt :patch_snapshot_id, "Patch snapshot ID (contains images with sha256 digests)", type: :string, required: false, short: "-s"
-            opt :patch_repositories, "Patch only repositories (comma separated list)", type: :string, require: false, short: "-o"
+            opt :patch_repository, "Patch only repository, can be #{Paint["multi", :green]} -p image1 -p image2", type: :string, require: false, short: "-p"
           end
         when "transfer"
           Optimist::options do
@@ -138,15 +138,16 @@ module RegistryUtils
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
             opt :snapshot_id, "Snapshot version (contains images with sha256 digests)", type: :string, required: true, short: "-s"
-            opt :download_by, "Download source images by \"tag\" or by \"sha256\" digests", type: :string, required: true, short: "-y"
+            opt :download_by, "Download source images by 'tag' or by 'sha256' digest", type: :string, required: true, short: "-y"
+            opt :save_to_as, "Save to file with name", type: :string, required: false, short: "-o"
             opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
             opt :target_user, "User name (target)", type: :string, required: true, short: "-n"
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
             opt :target_bundle, "Virtual bundle name (created from an existing snapshot)", type: :string, required: true, short: "-r"
             opt :target_project, "Project name (target)", type: :string, required: true, short: "-p"
             opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-d"
-            opt :docker_fake, "Fake only Docker API?", type: :boolean, default: false, required: false, short: "-o"
-            opt :add_tag, "Add tag (for example 'latest')", type: :string, required: false, short: "-a"
+            opt :docker_fake, "Fake only Docker API?", type: :boolean, default: false, required: false, short: "-f"
+            opt :add_tag, "Add tag (can be #{Paint["multi", :green]}, for example -a 'latest' -a 'RE29.SP1' -a '2022.16.0')", type: :string, required: false, short: "-a", multi: true
           end
         else
           Optimist::die "unknown subcommand #{subcommand.inspect}"
