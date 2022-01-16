@@ -74,8 +74,13 @@ module RegistryUtils
         result["tag"] = @tag
       end
 
-      add_tags = @add_tags.reject { |e| e == @tag }
-      result["add_tags"] = add_tags.dup if add_tags.size > 0
+      #ap @add_tags.class
+      #ap @add_tags 
+      #exit 0
+      if @add_tags
+        add_tags = @add_tags.reject { |e| e == @tag }
+        result["add_tags"] = add_tags.dup if add_tags.size > 0
+      end
       result["host"] = @host
       result["port"] = @port
       result["scheme"] = @scheme

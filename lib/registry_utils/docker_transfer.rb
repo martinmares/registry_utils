@@ -89,7 +89,8 @@ module RegistryUtils
         # to_image_id = to_docker_image.json['Id']
         # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
 
-        add_tags = [tag]
+        add_tags = []
+        add_tags << tag
         if @add_tag
           @add_tag.each { |t| add_tags << t }
         end
