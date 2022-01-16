@@ -191,6 +191,7 @@ module RegistryUtils
 
     def parse_digest(push_result, tag)
       repo_digests = push_result.json['RepoDigests']
+      ap repo_digests
 
       cnt = 0
       idx = 0
