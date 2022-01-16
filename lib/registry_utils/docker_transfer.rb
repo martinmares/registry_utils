@@ -72,7 +72,7 @@ module RegistryUtils
           end
         end
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts "  🎁 tag #{Paint[img.snapshot_id, :magenta]}"
+        puts "  🎁 tag #{Paint[img.snapshot_id, :yellow]}"
 
         tag = img.snapshot_id
 
@@ -96,7 +96,7 @@ module RegistryUtils
 
         if @add_tag
           @add_tag.each do |tag|
-            puts "  🎁 +tag #{Paint[tag, :magenta]}"
+            puts "  🎁 +tag #{Paint[tag, :yellow]}"
             local_img.tag('repo' => remote_img_name, 'tag' => "#{tag}" , force: true) unless @docker_fake
             print "  👉 #{remote_img_name}:#{tag}"
             push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
@@ -177,9 +177,6 @@ module RegistryUtils
       target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
       file_name = @save_to_as || @snapshot_id
-      ap @save_to_as
-      ap @snapshot_id
-      ap file_name
       snap.add_from_snapshot_id(@save_to_as)
       save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_ruby_obj.to_yaml)
