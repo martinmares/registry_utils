@@ -162,7 +162,7 @@ module RegistryUtils
             end
           end
           uri = URI("#{repos.image_url}")
-          snapshot.add_image(repos.name, repos.tag, repos.transfer_tag,
+          snapshot.add_image(repos.name, nil, repos.tag, repos.transfer_tag,
                              uri.host, uri.port, uri.scheme,
                              repos.project, repos.repository, digest, repos.detected?,
                              patched)
