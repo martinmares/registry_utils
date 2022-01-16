@@ -72,7 +72,7 @@ module RegistryUtils
           end
         end
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-        puts "  🎁 tag #{Paint[img.snapshot_id, :yellow]}"
+        puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
 
         tag = img.snapshot_id
 
@@ -96,7 +96,7 @@ module RegistryUtils
 
         if @add_tag
           @add_tag.each do |tag|
-            puts "  🎁 +tag #{Paint[tag, :yellow]}"
+            puts "  🎁 +tag #{Paint[tag, :blue]}"
             local_img.tag('repo' => remote_img_name, 'tag' => "#{tag}" , force: true) unless @docker_fake
             print "  👉 #{remote_img_name}:#{tag}"
             push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
