@@ -39,8 +39,8 @@ module RegistryUtils
     end
 
     def transfer_images
-      docker_auth(@docker) unless @docker_fake
-      docker_auth(@target_docker) unless @docker_fake
+      # docker_auth(@docker) unless @docker_fake
+      # docker_auth(@target_docker) unless @docker_fake
 
       snap = SnapSnapshot.new(@target_bundle, @snapshot_id)
 
@@ -62,6 +62,7 @@ module RegistryUtils
             img.docker_img_name
           end
 
+        docker_auth(@docker) unless @docker_fake
         puts "  👈 #{pull_image}"
         
         unless @docker_fake
@@ -74,6 +75,7 @@ module RegistryUtils
         remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
         puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
 
+        docker_auth(@target_docker) unless @docker_fake
         tag = img.snapshot_id
 
         local_img.tag('repo' => remote_img_name, 'tag' => tag, force: true) unless @docker_fake
@@ -164,7 +166,7 @@ module RegistryUtils
       Docker.authenticate!('username' => endpoint.user, \
                            'password' => endpoint.pass, \
                            'serveraddress' => endpoint.url)
-      puts "🔑 authenticated to #{Paint[endpoint.url, :cyan]} with user #{endpoint.user}!"
+      puts "  🔑 authenticated to #{Paint[endpoint.url, :cyan]} with user #{endpoint.user}!"
     end
 
     def snapshot_file_name
