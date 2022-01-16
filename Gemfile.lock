@@ -8,33 +8,18 @@ GEM
   remote: https://rubygems.org/
   specs:
     awesome_print (1.9.2)
+    coderay (1.1.3)
     docker-api (2.2.0)
       excon (>= 0.47.0)
       multi_json
-    excon (0.89.0)
-    faraday (1.8.0)
-      faraday-em_http (~> 1.0)
-      faraday-em_synchrony (~> 1.0)
-      faraday-excon (~> 1.1)
-      faraday-httpclient (~> 1.0.1)
-      faraday-net_http (~> 1.0)
-      faraday-net_http_persistent (~> 1.1)
-      faraday-patron (~> 1.0)
-      faraday-rack (~> 1.0)
-      multipart-post (>= 1.2, < 3)
+    excon (0.90.0)
+    faraday (2.1.0)
+      faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
-    faraday-em_http (1.0.0)
-    faraday-em_synchrony (1.0.0)
-    faraday-excon (1.1.0)
-    faraday-httpclient (1.0.1)
-    faraday-net_http (1.0.1)
-    faraday-net_http_persistent (1.2.0)
-    faraday-patron (1.0.0)
-    faraday-rack (1.0.0)
+    faraday-net_http (2.0.1)
     fileutils (1.6.0)
     highline (2.0.3)
     multi_json (1.15.0)
-    multipart-post (2.1.1)
     optimist (3.0.1)
     paint (2.2.1)
     ruby-progressbar (1.11.0)
@@ -45,6 +30,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  coderay
   docker-api
   faraday
   fileutils
@@ -55,4 +41,4 @@ DEPENDENCIES
   ruby-progressbar
 
 BUNDLED WITH
-   2.2.32
+   2.3.4
