@@ -83,7 +83,7 @@ module RegistryUtils
         push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
 
         # target_sha_digest = push_result.json["Id"] if push_result
-        target_sha_digest = parse_digest(push_result, img.docker_img_name) if push_result
+        target_sha_digest = parse_digest(push_result, remote_img_name) if push_result
 
         # to_docker_image = docker_image.push(nil, repo_tag: new_image_name)
         # to_image_id = to_docker_image.json['Id']
@@ -99,16 +99,16 @@ module RegistryUtils
         print_result(push_result)
 
         if @add_tag
-          @add_tag.each do |tag|
-            puts "  🎁 +tag #{Paint[tag, :blue]}"
-            local_img.tag('repo' => remote_img_name, 'tag' => "#{tag}" , force: true) unless @docker_fake
-            print "  👉 #{remote_img_name}:#{tag}"
-            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
+          @add_tag.each do |t|
+            puts "  🎁 +tag #{Paint[t, :blue]}"
+            local_img.tag('repo' => remote_img_name, 'tag' => "#{t}" , force: false) unless @docker_fake
+            print "  👉 #{remote_img_name}:#{t}"
+            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{t}") unless @docker_fake
             print_result(push_result)
           end
         end
 
-        local_img.remove(:force => true) unless @docker_fake
+        local_img.remove(force: true) unless @docker_fake
         puts "\n"
       end
       save_transfer_to_file(snap) unless @docker_fake
@@ -189,14 +189,13 @@ module RegistryUtils
 
     end
 
-    def parse_digest(push_result, tag)
+    def parse_digest(push_result, find_by_repo)
       repo_digests = push_result.json['RepoDigests']
-      ap repo_digests
 
       cnt = 0
       idx = 0
       repo_digests.each do |t|
-        idx = cnt if t[tag]
+        idx = cnt if t[find_by_repo]
         cnt += 1
       end
       digest = repo_digests[idx]
