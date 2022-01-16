@@ -178,11 +178,13 @@ module RegistryUtils
     def save_transfer_to_file(snap)
       target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
-      file_name = @save_as || @snapshot_id
+      with_id = @save_as || @snapshot_id
       snap.add_from_snapshot_id(@save_as)
-      save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
+      save_to = "#{target_dir}/#{with_id}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_ruby_obj.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
+      puts "  🎉 with snapshot id #{Paint[with_id, :yellow]}"
+
     end
 
     def parse_digest(push_result, tag)
