@@ -15,8 +15,8 @@ module RegistryUtils
       @images = []
     end
 
-    def add_image(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
-      @images << SnapImage.new(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
+    def add_image(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+      @images << SnapImage.new(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
     end
 
     def add_from_snapshot_id(new_snap_id)
@@ -48,10 +48,11 @@ module RegistryUtils
   end
 
   class SnapImage
-    def initialize(name, tag, transfer_tags, host, port, scheme, project, repository, digest, detected, patched)
+    def initialize(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
+      @save_as = save_as
       @tag = tag
-      @transfer_tags = transfer_tags
+      @add_tags = add_tags
       @host = host
       @port = port
       @scheme = scheme
@@ -63,18 +64,23 @@ module RegistryUtils
     end
 
     def to_ruby_obj
-      result = 
-      {
-        "name" => @name,
-        "tag" => @tag,
-        "transfer_tags" => @transfer_tags.dup,
-        "host" => @host,
-        "port" => @port,
-        "scheme" => @scheme,
-        "project" => @project,
-        "repository" => @repository,
-        "digest" => @digest,
-      }
+      result = Hash.new
+      result["name"] = @name
+
+      if @save_as
+        result["tag"] = @save_as
+        # result["from_tag"] = @tag
+      else
+        result["tag"] = @tag
+      end
+
+      result["add_tags"] = @add_tags.dup
+      result["host"] = @host
+      result["port"] = @port
+      result["scheme"] = @scheme
+      result["project"] = @project
+      result["repository"] = @repository
+      result["digest"] = @digest
       result["detected"] if @detected
       result["patched"] if @patched
 

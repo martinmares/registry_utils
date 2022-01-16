@@ -10,7 +10,7 @@ module RegistryUtils
 
   class DockerTransfer
     attr_reader :docker, :docker_target, :docker_api
-    attr_accessor :save_to_as
+    attr_accessor :save_as
 
     def initialize(args)
       @bundle = args[:bundle]
@@ -34,7 +34,7 @@ module RegistryUtils
     def self.open_with(args)
       c = DockerTransfer.new(args)
       c.load_snapshot()
-      c.save_to_as = args[:save_to_as]
+      c.save_as = args[:save_as]
       yield(c)
     end
 
@@ -87,11 +87,13 @@ module RegistryUtils
         # to_image_id = to_docker_image.json['Id']
         # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
 
-        transfer_tags = [tag]
-        transfer_tags = @add_tag if @add_tag
+        add_tags = [tag]
+        if @add_tag
+          @add_tag.each { |t| add_tags << t }
+        end
 
         uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
-        snap.add_image(img.name, tag, transfer_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+        snap.add_image(img.name, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
         print_result(push_result)
 
         if @add_tag
@@ -176,8 +178,8 @@ module RegistryUtils
     def save_transfer_to_file(snap)
       target_dir = "#{SnapConfig::SNAPSHOTS_DIR}/#{@target_bundle}"
       SnapConfig::check_dir(target_dir)
-      file_name = @save_to_as || @snapshot_id
-      snap.add_from_snapshot_id(@save_to_as)
+      file_name = @save_as || @snapshot_id
+      snap.add_from_snapshot_id(@save_as)
       save_to = "#{target_dir}/#{file_name}.#{SnapConfig::IMAGES_EXTENSION}"
       File.write(save_to, snap.to_ruby_obj.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
