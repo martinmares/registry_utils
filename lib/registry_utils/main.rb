@@ -6,7 +6,7 @@ module RegistryUtils
     require "optimist"
     require "paint"
 
-    require_relative "harbor"
+    require_relative "registry"
 
     CMD_HEALTH = "health"
     CMD_PROJECTS = "projects"
@@ -20,7 +20,7 @@ module RegistryUtils
 
     def initialize()
       @command, @global_args, @args = parse_args()
-      @harbor = Harbor.new(@args)
+      @registry = Registry.new(@args)
       puts "Running command #{Paint[@command, :yellow]} ..."
     end
 
@@ -58,19 +58,19 @@ module RegistryUtils
 
     def run
       if cmd_health?
-        @harbor.call(:health)
+        @registry.call(:health)
       elsif cmd_projects?
-        @harbor.call(:projects)
+        @registry.call(:projects)
       elsif cmd_cleanup?
-        @harbor.call(:cleanup)
+        @registry.call(:cleanup)
       elsif cmd_repositories?
-        @harbor.call(:repositories)
+        @registry.call(:repositories)
       elsif cmd_artifacts?
-        @harbor.call(:artifacts)
+        @registry.call(:artifacts)
       elsif cmd_snapshot?
-        @harbor.call(:snapshot)
+        @registry.call(:snapshot)
       elsif cmd_transfer?
-        @harbor.call(:transfer)
+        @registry.call(:transfer)
       end
     end
 
@@ -78,7 +78,7 @@ module RegistryUtils
 
     def parse_args
       global_opts = Optimist::options do
-        banner "Harbor utility, possible commands are: #{SUB_COMMANDS}"
+        banner "Registry utility (Harbor), possible commands are: #{SUB_COMMANDS}"
         opt :debug, "Debug?", type: :boolean, default: false
         stop_on SUB_COMMANDS
       end
@@ -87,7 +87,7 @@ module RegistryUtils
       opts = case subcommand
         when "cleanup"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project, "Project name", type: :string, required: true, short: "-p"
@@ -97,13 +97,13 @@ module RegistryUtils
           end
         when "projects"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
           end
         when "repositories"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project, "Project name", type: :string, required: true, short: "-p"
@@ -111,7 +111,7 @@ module RegistryUtils
           end
         when "artifacts"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :project, "Project name", type: :string, required: true, short: "-p"
@@ -119,13 +119,13 @@ module RegistryUtils
           end
         when "health"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
           end
         when "snapshot"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :bundle, "Bundle name (must be located here: `conf/bundle.{bundle-name}.yml`)", type: :string, required: true, short: "-b"
@@ -134,14 +134,14 @@ module RegistryUtils
           end
         when "transfer"
           Optimist::options do
-            opt :url, "Harbor URL", type: :string, required: true, short: "-l"
+            opt :url, "Registry URL", type: :string, required: true, short: "-l"
             opt :user, "User name", type: :string, required: true, short: "-u"
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
             opt :snapshot_id, "Snapshot version (contains images with sha256 digests)", type: :string, required: true, short: "-s"
             opt :pull_by, "Pull source images by 'tag' or by 'sha256' digest", type: :string, required: true, short: "-y"
             opt :save_as, "Save with name (instead of original snapshot_id)", type: :string, required: false, short: "-o"
-            opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
+            opt :target_url, "Registry URL (target)", type: :string, required: true, short: "-t"
             opt :target_user, "User name (target)", type: :string, required: true, short: "-n"
             opt :target_pass, "Password (target)", type: :string, required: true, short: "-w"
             opt :target_bundle, "Virtual bundle name (created from an existing snapshot)", type: :string, required: true, short: "-r"

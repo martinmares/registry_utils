@@ -24,7 +24,7 @@ module RegistryUtils
       @docker_api = args[:docker_api]
       @add_tag ||= args[:add_tag]
       ENV["DOCKER_URL"] = @docker_api # https://github.com/swipely/docker-api
-      @docker_fake = args[:docker_fake] || false
+      @dry_run = args[:dry_run] || false
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
       @target_docker = DockerEndpoit.new(args[:target_url], args[:target_user], args[:target_pass])
       @images = []
@@ -39,8 +39,8 @@ module RegistryUtils
     end
 
     def transfer_images
-      # docker_auth(@docker) unless @docker_fake
-      # docker_auth(@target_docker) unless @docker_fake
+      # docker_auth(@docker) unless @dry_run
+      # docker_auth(@target_docker) unless @dry_run
 
       snap = SnapSnapshot.new(@target_bundle, @snapshot_id)
 
@@ -64,10 +64,10 @@ module RegistryUtils
                 img.docker_img_name
               end
 
-            docker_auth(@docker) unless @docker_fake
+            docker_auth(@docker) unless @dry_run
             puts "  👈 #{pull_image}"
 
-            unless @docker_fake
+            unless @dry_run
               if @pull_by == "tag"
                 local_img = Docker::Image.create("fromImage" => img.docker_img_name_by_tag)
               elsif @pull_by == "sha256"
@@ -77,12 +77,12 @@ module RegistryUtils
             remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
             puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
 
-            docker_auth(@target_docker) unless @docker_fake
+            docker_auth(@target_docker) unless @dry_run
             tag = img.snapshot_id
 
-            local_img.tag("repo" => remote_img_name, "tag" => tag, force: true) unless @docker_fake
+            local_img.tag("repo" => remote_img_name, "tag" => tag, force: true) unless @dry_run
             print "  👉 #{remote_img_name}:#{img.snapshot_id}"
-            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
+            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @dry_run
             target_sha_digest = parse_digest(push_result, remote_img_name) if push_result
 
             add_tags = []
@@ -99,14 +99,14 @@ module RegistryUtils
             if @add_tag
               @add_tag.each do |t|
                 puts "  🎁 +tag #{Paint[t, :blue]}"
-                local_img.tag("repo" => remote_img_name, "tag" => "#{t}", force: false) unless @docker_fake
+                local_img.tag("repo" => remote_img_name, "tag" => "#{t}", force: false) unless @dry_run
                 print "  👉 #{remote_img_name}:#{t}"
-                push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{t}") unless @docker_fake
+                push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{t}") unless @dry_run
                 print_result(push_result)
               end
             end
 
-            local_img.remove(force: true) unless @docker_fake
+            local_img.remove(force: true) unless @dry_run
             puts "\n"
           end
 
@@ -118,7 +118,7 @@ module RegistryUtils
       end
       snap.transferred
       snap.took(complete_took.real)
-      save_transfer_to_file(snap) unless @docker_fake
+      save_transfer_to_file(snap) unless @dry_run
     end
 
 =begin

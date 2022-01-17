@@ -13,7 +13,7 @@ module RegistryUtils
   require_relative "docker_transfer"
 
   PAGE_SIZE = 10
-  class Harbor
+  class Registry
 
     attr_reader :projects
 
@@ -155,9 +155,9 @@ module RegistryUtils
 
     def print_health
       if healthy?(@health["status"])
-        puts "Harbor is #{Paint["healthy!", :green]}"
+        puts "Registry is #{Paint["healthy!", :green]}"
       else
-        puts "Harbor is #{Paint["unhealthy!", :red]}"
+        puts "Registry is #{Paint["unhealthy!", :red]}"
       end
       print_health_of_components(@health)
     end
