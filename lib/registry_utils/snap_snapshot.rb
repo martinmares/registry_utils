@@ -108,7 +108,7 @@ module RegistryUtils
       end
 
       if @add_tags
-        add_tags = @add_tags.reject { |e| e == result["tag"] }
+        add_tags = @add_tags.uniq.reject { |e| e == result["tag"] }
         result["add_tags"] = add_tags.dup if add_tags.size > 0
       end
       result["host"] = @host
