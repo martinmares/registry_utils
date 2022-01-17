@@ -57,7 +57,7 @@ module RegistryUtils
           took = Benchmark.measure do
             puts "[#{Paint[(i + 1).to_s.rjust(2, " "), :green]}] #{img.name}"
 
-            pull_image = case @download_by
+            pull_image = case @pull_by
               when "tag"
                 img.docker_img_name_by_tag
               when "sha256"
@@ -68,9 +68,9 @@ module RegistryUtils
             puts "  👈 #{pull_image}"
 
             unless @docker_fake
-              if @download_by == "tag"
+              if @pull_by == "tag"
                 local_img = Docker::Image.create("fromImage" => img.docker_img_name_by_tag)
-              elsif @download_by == "sha256"
+              elsif @pull_by == "sha256"
                 local_img = Docker::Image.create("fromImage" => img.docker_img_name)
               end
             end
