@@ -1,5 +1,4 @@
 module RegistryUtils
-
   require "docker"
   require "yaml"
   require "paint"
@@ -45,85 +44,80 @@ module RegistryUtils
 
       snap = SnapSnapshot.new(@target_bundle, @snapshot_id)
 
-      if patch_only?
-        process_images = @images.select { |img| img.patched? }
-        puts "Patch only `abracadabra` 🪄"
-      else
-        process_images = @images
+      complete_took = Benchmark.measure do
+        if patch_only?
+          process_images = @images.select { |img| img.patched? }
+          puts "Patch only `abracadabra` 🪄"
+        else
+          process_images = @images
+        end
+
+        process_images.each_with_index do |img, i|
+          snap_img = nil
+          took = Benchmark.measure do
+            puts "[#{Paint[(i + 1).to_s.rjust(2, " "), :green]}] #{img.name}"
+
+            pull_image = case @download_by
+              when "tag"
+                img.docker_img_name_by_tag
+              when "sha256"
+                img.docker_img_name
+              end
+
+            docker_auth(@docker) unless @docker_fake
+            puts "  👈 #{pull_image}"
+
+            unless @docker_fake
+              if @download_by == "tag"
+                local_img = Docker::Image.create("fromImage" => img.docker_img_name_by_tag)
+              elsif @download_by == "sha256"
+                local_img = Docker::Image.create("fromImage" => img.docker_img_name)
+              end
+            end
+            remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
+            puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
+
+            docker_auth(@target_docker) unless @docker_fake
+            tag = img.snapshot_id
+
+            local_img.tag("repo" => remote_img_name, "tag" => tag, force: true) unless @docker_fake
+            print "  👉 #{remote_img_name}:#{img.snapshot_id}"
+            push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
+            target_sha_digest = parse_digest(push_result, remote_img_name) if push_result
+
+            add_tags = []
+            add_tags << tag
+            if @add_tag
+              @add_tag.each { |t| add_tags << t }
+            end
+
+            uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
+            snap.type = "transfer"
+            snap_img = snap.add_image(img.name, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+            print_result(push_result)
+
+            if @add_tag
+              @add_tag.each do |t|
+                puts "  🎁 +tag #{Paint[t, :blue]}"
+                local_img.tag("repo" => remote_img_name, "tag" => "#{t}", force: false) unless @docker_fake
+                print "  👉 #{remote_img_name}:#{t}"
+                push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{t}") unless @docker_fake
+                print_result(push_result)
+              end
+            end
+
+            local_img.remove(force: true) unless @docker_fake
+            puts "\n"
+          end
+
+          if snap_img
+            snap_img.transferred
+            snap_img.took(took.real)
+          end
+        end
       end
-
-      process_images.each_with_index do |img, i|
-
-        snap_img = nil
-        took = Benchmark.measure do
-          puts "[#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{img.name}"
-
-          pull_image =
-            case @download_by
-            when "tag"
-              img.docker_img_name_by_tag
-            when "sha256"
-              img.docker_img_name
-            end
-
-          docker_auth(@docker) unless @docker_fake
-          puts "  👈 #{pull_image}"
-          
-          unless @docker_fake
-            if @download_by == "tag"
-              local_img = Docker::Image.create('fromImage' => img.docker_img_name_by_tag)
-            elsif @download_by == "sha256"
-              local_img = Docker::Image.create('fromImage' => img.docker_img_name)
-            end
-          end
-          remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
-          puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
-
-          docker_auth(@target_docker) unless @docker_fake
-          tag = img.snapshot_id
-
-          local_img.tag('repo' => remote_img_name, 'tag' => tag, force: true) unless @docker_fake
-          print "  👉 #{remote_img_name}:#{img.snapshot_id}"
-          push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{tag}") unless @docker_fake
-
-          # target_sha_digest = push_result.json["Id"] if push_result
-          target_sha_digest = parse_digest(push_result, remote_img_name) if push_result
-
-          # to_docker_image = docker_image.push(nil, repo_tag: new_image_name)
-          # to_image_id = to_docker_image.json['Id']
-          # add_image(name, tag, transfer_tag, host, port, scheme, project, repository, digest, detected, patched)
-
-          add_tags = []
-          add_tags << tag
-          if @add_tag
-            @add_tag.each { |t| add_tags << t }
-          end
-
-          uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
-          snap.type = "transfer"
-          snap_img = snap.add_image(img.name, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
-          print_result(push_result)
-
-          if @add_tag
-            @add_tag.each do |t|
-              puts "  🎁 +tag #{Paint[t, :blue]}"
-              local_img.tag('repo' => remote_img_name, 'tag' => "#{t}" , force: false) unless @docker_fake
-              print "  👉 #{remote_img_name}:#{t}"
-              push_result = local_img.push(nil, repo_tag: "#{remote_img_name}:#{t}") unless @docker_fake
-              print_result(push_result)
-            end
-          end
-
-          local_img.remove(force: true) unless @docker_fake
-          puts "\n"
-          
-        end
-
-        if snap_img
-          snap_img.transferred
-          snap_img.took(took.real)
-        end
-    end
+      snap.transferred
+      snap.took(complete_took.real)
       save_transfer_to_file(snap) unless @docker_fake
     end
 
@@ -176,9 +170,7 @@ module RegistryUtils
     end
 
     def docker_auth(endpoint)
-      Docker.authenticate!('username' => endpoint.user, \
-                           'password' => endpoint.pass, \
-                           'serveraddress' => endpoint.url)
+      Docker.authenticate!("username" => endpoint.user, "password" => endpoint.pass, "serveraddress" => endpoint.url)
       puts "  🔑 authenticated to #{Paint[endpoint.url, :cyan]} with user #{endpoint.user}!"
     end
 
@@ -199,11 +191,10 @@ module RegistryUtils
       File.write(save_to, snap.to_ruby_obj.to_yaml)
       puts "  💾 saved to file #{Paint[save_to, :cyan]}"
       puts "  🎉 with snapshot id #{Paint[with_id, :yellow]}"
-
     end
 
     def parse_digest(push_result, find_by_repo)
-      repo_digests = push_result.json['RepoDigests']
+      repo_digests = push_result.json["RepoDigests"]
 
       cnt = 0
       idx = 0
@@ -214,14 +205,14 @@ module RegistryUtils
       digest = repo_digests[idx]
 
       # trick!
-      result = (digest.reverse[0..digest.reverse.index(':') - 1]).reverse
+      result = (digest.reverse[0..digest.reverse.index(":") - 1]).reverse
       "sha256:#{result}"
     end
-
   end
 
   class DockerEndpoit
     attr_reader :url, :user, :pass
+
     def initialize(url, user, pass)
       @url = url
       @user = user
@@ -232,7 +223,8 @@ module RegistryUtils
 
   class DockerImage
     attr_accessor :name, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected, :patched
-    def initialize(name, snapshot_id, tag, host, port , scheme, project, repository, digest, detected, patched)
+
+    def initialize(name, snapshot_id, tag, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
       @snapshot_id = snapshot_id
       @tag = tag
@@ -262,9 +254,7 @@ module RegistryUtils
     def patched?
       @patched
     end
-
   end
-
 end
 
 =begin

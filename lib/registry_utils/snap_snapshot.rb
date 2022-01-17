@@ -31,6 +31,17 @@ module RegistryUtils
       end
     end
 
+    def transferred
+      @transferred = {
+        "timestamp" => DateTime.now.to_s,
+        "utc" => DateTime.now.new_offset(0).to_s
+      }
+    end
+
+    def took(sec)
+      @took = sec
+    end
+
     def to_ruby_obj
       result = {}
       images = []
@@ -44,6 +55,9 @@ module RegistryUtils
         "bundle" => @bundle,
         "snapshot_id" => @snapshot_id
       }
+      result["took"] = @took if @took
+      result["transferred"] = @transferred if @transferred
+
       result["from_snapshot_id"] = @from_snapshot_id if @from_snapshot_id
       result["patch_snapshot_id"] = @patch_snapshot_id if @patch_snapshot_id
       result["patch_repositories"] = @patch_repositories if @patch_repositories
@@ -83,7 +97,7 @@ module RegistryUtils
     def to_ruby_obj
       result = Hash.new
       result["name"] = @name
-      result["took"] = @took
+      result["took"] = @took if @took
       result["transferred"] = @transferred if @transferred
 
       if @save_as
