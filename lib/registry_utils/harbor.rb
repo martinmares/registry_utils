@@ -21,8 +21,8 @@ module RegistryUtils
       @args = args
       @url = @args[:url]
       @client = RegistryUtils::Client.new(@url, @args[:user], @args[:pass])
-      @project_name = @args[:project_name]
-      @repository_name = @args[:repository_name]
+      @project_name = @args[:project]
+      @repository_name = @args[:repository]
       @keep_last_n = @args[:keep_last_n]
       @api_path = "api/v2.0"
       @projects = {}
@@ -42,7 +42,8 @@ module RegistryUtils
 
     def list_of_repositories_endpoint(project_name, repository_name = nil)
       if repository_name
-        "#{@api_path}/projects/#{project_name}/repositories/#{repository_name}"
+        repo = repository_name.gsub("/", "%252F")
+        "#{@api_path}/projects/#{project_name}/repositories/#{repo}"
       else
         "#{@api_path}/projects/#{project_name}/repositories"
       end
@@ -366,12 +367,16 @@ module RegistryUtils
             if keep.has_key?(id)
               puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["KEEP  ", :green]} #{artifact}"
             else
-              puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE", :red]} #{artifact}"
-              response = @client.delete(delete_artifact(project_name, repository_name, artifact.digest))
-              if @client.ok?(response.status)
-                puts "      => artifact #{Paint[artifact.digest, :green]} successfully deleted!"
+              unless @args[:dry_run]
+                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE", :red]} #{artifact}"
+                response = @client.delete(delete_artifact(project_name, repository_name, artifact.digest))
+                if @client.ok?(response.status)
+                  puts "      => artifact #{Paint[artifact.digest, :green]} successfully deleted!"
+                else
+                  puts "Something wrong (api_cleanup) => status: #{response.status}, body: #{response.body}"
+                end
               else
-                puts "Something wrong (api_cleanup) => status: #{response.status}, body: #{response.body}"
+                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE!", :magenta]} #{artifact} #{Paint['(dry run only)!', :yellow]}"
               end
             end
           end

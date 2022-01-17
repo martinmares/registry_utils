@@ -93,6 +93,7 @@ module RegistryUtils
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
             opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
+            opt :dry_run, "Dry run? (fake only)", type: :boolean, default: false, required: false, short: "-f"
           end
         when "projects"
           Optimist::options do
@@ -146,7 +147,7 @@ module RegistryUtils
             opt :target_bundle, "Virtual bundle name (created from an existing snapshot)", type: :string, required: true, short: "-r"
             opt :target_project, "Project name (target)", type: :string, required: true, short: "-p"
             opt :docker_api, "Docker URL (TCP: 'tcp://example.com:5422' or SOCKET: 'unix:///var/run/docker.sock')", type: :string, required: true, short: "-d"
-            opt :docker_fake, "Fake only Docker API?", type: :boolean, default: false, required: false, short: "-f"
+            opt :dry_run, "Dry run? (fake only Docker API)", type: :boolean, default: false, required: false, short: "-f"
             opt :add_tag, "Add tag (can be #{Paint["multi", :green]}, for example -a 'latest' -a 'RE29.SP1' -a '2022.16.0')", type: :string, required: false, short: "-a", multi: true
           end
         else
