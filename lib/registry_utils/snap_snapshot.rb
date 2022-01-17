@@ -5,9 +5,12 @@ module RegistryUtils
 
   class SnapSnapshot
 
+    attr_writer :type
+
     def initialize(bundle, snapshot_id, patch_snapshot_id=nil, patch_repositories=nil)
       @timestamp = DateTime.now.to_s
       @utc = DateTime.now.new_offset(0).to_s
+      @type = "snapshot"
       @bundle = bundle
       @snapshot_id = snapshot_id
       @patch_snapshot_id = patch_snapshot_id
@@ -16,7 +19,9 @@ module RegistryUtils
     end
 
     def add_image(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
-      @images << SnapImage.new(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+      new_img = SnapImage.new(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+      @images << new_img
+      new_img
     end
 
     def add_from_snapshot_id(new_snap_id)
@@ -35,6 +40,7 @@ module RegistryUtils
       result = {
         "timestamp" => @timestamp,
         "utc" => @utc,
+        "type" => @type,
         "bundle" => @bundle,
         "snapshot_id" => @snapshot_id
       }
@@ -63,9 +69,22 @@ module RegistryUtils
       @patched = patched
     end
 
+    def transferred
+      @transferred = {
+        "timestamp" => DateTime.now.to_s,
+        "utc" => DateTime.now.new_offset(0).to_s
+      }
+    end
+
+    def took(sec)
+      @took = sec
+    end
+
     def to_ruby_obj
       result = Hash.new
       result["name"] = @name
+      result["took"] = @took
+      result["transferred"] = @transferred if @transferred
 
       if @save_as
         result["tag"] = @save_as
@@ -74,11 +93,8 @@ module RegistryUtils
         result["tag"] = @tag
       end
 
-      #ap @add_tags.class
-      #ap @add_tags 
-      #exit 0
       if @add_tags
-        add_tags = @add_tags.reject { |e| e == @tag }
+        add_tags = @add_tags.reject { |e| e == result["tag"] }
         result["add_tags"] = add_tags.dup if add_tags.size > 0
       end
       result["host"] = @host
