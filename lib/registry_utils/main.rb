@@ -138,7 +138,7 @@ module RegistryUtils
             opt :pass, "Password", type: :string, required: true, short: "-e"
             opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
             opt :snapshot_id, "Snapshot version (contains images with sha256 digests)", type: :string, required: true, short: "-s"
-            opt :download_by, "Download source images by 'tag' or by 'sha256' digest", type: :string, required: true, short: "-y"
+            opt :pull_by, "Pull source images by 'tag' or by 'sha256' digest", type: :string, required: true, short: "-y"
             opt :save_as, "Save with name (instead of original snapshot_id)", type: :string, required: false, short: "-o"
             opt :target_url, "Harbor URL (target)", type: :string, required: true, short: "-t"
             opt :target_user, "User name (target)", type: :string, required: true, short: "-n"

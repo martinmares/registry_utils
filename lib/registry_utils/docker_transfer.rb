@@ -18,7 +18,7 @@ module RegistryUtils
       @target_bundle = args[:target_bundle]
       @target_project = args[:target_project]
       @target_url = args[:target_url]
-      @download_by = args[:download_by] || "sha256"
+      @pull_by = args[:pull_by] || "sha256"
       @target_user = args[:target_user]
       @target_pass = args[:target_pass]
       @docker_api = args[:docker_api]
