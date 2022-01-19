@@ -84,12 +84,17 @@ module RegistryUtils
       end
 
       subcommand = ARGV.shift
+
+      basic_opts = [
+        { name: :url, desc: "Registry URL", opts: {type: :string, required: true, short: "-l"} },
+        { name: :user, desc: "User name", opts: {type: :string, required: true, short: "-u"} },
+        { name: :pass, desc: "Password", opts: {type: :string, required: true, short: "-e"} }
+      ]
+
       opts = case subcommand
         when "cleanup"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
             opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
@@ -97,46 +102,34 @@ module RegistryUtils
           end
         when "projects"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
           end
         when "repositories"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
           end
         when "artifacts"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
           end
         when "health"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
           end
         when "snapshot"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :bundle, "Bundle name (must be located here: `conf/bundle.{bundle-name}.yml`)", type: :string, required: true, short: "-b"
             opt :patch_snapshot_id, "Patch snapshot ID (contains images with sha256 digests)", type: :string, required: false, short: "-s"
             opt :patch_repository, "Patch only repository, can be #{Paint["multi", :green]} -p image1 -p image2", type: :string, require: false, short: "-p"
           end
         when "transfer"
           Optimist::options do
-            opt :url, "Registry URL", type: :string, required: true, short: "-l"
-            opt :user, "User name", type: :string, required: true, short: "-u"
-            opt :pass, "Password", type: :string, required: true, short: "-e"
+            basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
             opt :snapshot_id, "Snapshot version (contains images with sha256 digests)", type: :string, required: true, short: "-s"
             opt :pull_by, "Pull source images by 'tag' or by 'sha256' digest", type: :string, required: true, short: "-y"
