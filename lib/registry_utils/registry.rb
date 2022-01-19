@@ -96,8 +96,17 @@ module RegistryUtils
       when :artifacts
         api_projects()
         api_repositories(@project_name, @repository_name)
-        api_artifacts(@project_name, @repository_name)
-        print_artifacts(@project_name, @repository_name)
+        if @repository_name
+          api_artifacts(@project_name, @repository_name)
+          print_artifacts(@project_name, @repository_name)
+        else
+          if @projects.has_key?(@project_name)
+            @projects[@project_name].repositories.each do |(repo_name, _data)|
+              api_artifacts(@project_name, repo_name)
+              print_artifacts(@project_name, repo_name)  
+            end
+          end
+        end
       when :snapshot
         bundle_name = @args[:bundle]
         puts "Bundle name #{Paint[bundle_name, :yellow]}"
@@ -319,12 +328,25 @@ module RegistryUtils
         project = @projects[project_name]
         repos = project.repositories
 
-        if repos.has_key? repository_name
+        if repos.has_key?(repository_name) && repos[repository_name].artifacts
+          search_by_tag = @args[:search_by_tag]
           artifacts = repos[repository_name].artifacts.sort_by { |(k, v)| v.id }
-          puts "Repo with name: #{Paint[repository_name, :cyan]}"
-          puts "Number of artifacts: #{Paint[artifacts.size, :green]}"
-          artifacts.each_with_index do |(id, artifact), i|
-            puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
+          if search_by_tag
+            filtered_artifacts = artifacts.filter { |(id, artifact)| artifact.tags.filter { |tag| tag[search_by_tag] }.size > 0 }
+          else
+            filtered_artifacts = artifacts
+          end
+          if filtered_artifacts
+            puts "Repo with name: #{Paint[repository_name, :cyan]}"
+            puts "Number of artifacts: #{Paint[filtered_artifacts.size, :green]}"
+            puts "Search by tag: #{Paint[search_by_tag, :yellow]}" if search_by_tag
+            filtered_artifacts.each_with_index do |(id, artifact), i|
+              unless search_by_tag
+                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
+              else
+                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact.to_s_higlight(search_by_tag)}"
+              end
+            end
           end
         end
       end

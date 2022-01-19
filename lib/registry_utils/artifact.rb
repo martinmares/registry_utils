@@ -19,6 +19,13 @@ module RegistryUtils
       "id = #{@id.to_s.rjust(8, ' ')}, digest = #{Paint[@digest, :cyan]}, tags = #{@tags}, push = #{push_simple}, pull = #{pull_simple}"
     end
 
+    def to_s_higlight(search_by_tag)
+      push_simple = Utils::date_time_simple(@push_time)
+      pull_simple = Utils::date_time_simple(@pull_time)
+      (tags, tags_higlighted) = @tags.partition { |e| !e[search_by_tag] }
+      "id = #{@id.to_s.rjust(8, ' ')}, digest = #{Paint[@digest, :cyan]}, found = #{Paint[tags_higlighted, :yellow]}, others = #{tags}, push = #{push_simple}, pull = #{pull_simple}"
+    end
+
     private
 
     def parse_tags(tags)

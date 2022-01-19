@@ -115,6 +115,7 @@ module RegistryUtils
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
+            opt :search_by_tag, "Search by 'tag'", type: :string, required: false, short: "-g"
           end
         when "health"
           Optimist::options do
