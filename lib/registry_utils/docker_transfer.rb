@@ -188,12 +188,12 @@ module RegistryUtils
       with_id = @save_as || @snapshot_id
       snap.add_from_snapshot_id(@save_as)
       save_to = "#{target_dir}/#{with_id}.#{SnapConfig::IMAGES_EXTENSION}"
-      save_snap_id_to = "#{target_dir}/#{LATEST_SNAP_ID_FILENAME}"
+      save_snap_id_to = "#{target_dir}/#{SnapConfig::LATEST_SNAP_ID_FILENAME}"
 
       File.write(save_to, snap.to_ruby_obj.to_yaml)
       puts "  💾 the content is saved to a file #{Paint[save_to, :cyan]}"
-      File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", snap.to_ruby_obj.to_yaml)
-      puts "  💾 the #{Paint['latest state', :green]} is saved to a file #{Paint[LATEST_IMAGES_FILENAME, :green]}"
+      File.write("#{target_dir}/#{SnapConfig::LATEST_IMAGES_FILENAME}", snap.to_ruby_obj.to_yaml)
+      puts "  💾 the #{Paint['latest state', :green]} is saved to a file #{Paint[SnapConfig::LATEST_IMAGES_FILENAME, :green]}"
       File.write(save_snap_id_to, with_id)
       puts "  🎉 with snapshot id #{Paint[with_id, :yellow]}, saved to file #{Paint[save_snap_id_to, :cyan]}"
     end
