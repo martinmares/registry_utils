@@ -141,7 +141,7 @@ module RegistryUtils
       
       if patch_only
         old_snapshot = load_patch_from_snapshot(patch_snapshot_id)
-        repos_only = patch_repositories.split(",")
+        repos_only = patch_repositories # .split(",")
       end
 
       snapshot = SnapSnapshot.new(@bundle_name, snapshot_id, patch_snapshot_id, patch_repositories)

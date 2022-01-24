@@ -20,7 +20,7 @@ module RegistryUtils
 
     def add_image(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
       new_img = SnapImage.new(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
-      @images << new_img
+        @images << new_img
       new_img
     end
 
@@ -43,11 +43,6 @@ module RegistryUtils
     end
 
     def to_ruby_obj
-      result = {}
-      images = []
-      @images.each do |image|
-        images << image.to_ruby_obj
-      end
       result = {
         "timestamp" => @timestamp,
         "utc" => @utc,
@@ -61,7 +56,13 @@ module RegistryUtils
       result["from_snapshot_id"] = @from_snapshot_id if @from_snapshot_id
       result["patch_snapshot_id"] = @patch_snapshot_id if @patch_snapshot_id
       result["patch_repositories"] = @patch_repositories if @patch_repositories
+
+      images = []
+      @images.each do |image|
+        images << image.to_ruby_obj
+      end
       result["images"] = images if images
+
       result
     end
 
@@ -117,8 +118,8 @@ module RegistryUtils
       result["project"] = @project
       result["repository"] = @repository
       result["digest"] = @digest
-      result["detected"] if @detected
-      result["patched"] if @patched
+      result["detected"] = @detected if @detected
+      result["patched"] = @patched if @patched
 
       result
     end

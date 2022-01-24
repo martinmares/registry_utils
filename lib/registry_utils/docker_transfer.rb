@@ -46,7 +46,8 @@ module RegistryUtils
 
       complete_took = Benchmark.measure do
         if patch_only?
-          process_images = @images.select { |img| img.patched? }
+          # process_images = @images.select { |img| img.patched? }
+          process_images = @images
           puts "Patch only `abracadabra` 🪄"
         else
           process_images = @images
@@ -65,6 +66,7 @@ module RegistryUtils
               end
 
             docker_auth(@docker) unless @dry_run
+            puts " 🪄 `patched` image ... `wingardium leviosa`" if img.patched?
             puts "  👈 #{pull_image}"
 
             unless @dry_run
