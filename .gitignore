@@ -9,6 +9,8 @@
 secrets/
 .secrets/
 snapshots/
+.test/
+.tests/
 
 # include
 conf/

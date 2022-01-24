@@ -67,9 +67,9 @@ module RegistryUtils
       snapshot_id = "#{today}.#{new_patch}"
       yaml = make_yaml(snapshot_id, patch_snapshot_id, patch_repositories)
       File.write(save_to, yaml)
-      puts "  💾 saved to file #{Paint[save_to, :cyan]}"
+      puts "  💾 the content is saved to a file #{Paint[save_to, :cyan]}"
       File.write(save_snap_id_to, snapshot_id)
-      puts "  🎉 snapshot id #{Paint[snapshot_id, :yellow]}, saved to file #{Paint[save_snap_id_to, :cyan]}"
+      puts "  🎉 with snapshot id #{Paint[snapshot_id, :yellow]}, saved to file #{Paint[save_snap_id_to, :cyan]}"
 
       if completed?
         File.write("#{target_dir}/#{LATEST_IMAGES_FILENAME}", yaml)
