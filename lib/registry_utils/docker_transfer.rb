@@ -28,7 +28,7 @@ module RegistryUtils
       @docker = DockerEndpoit.new(args[:url], args[:user], args[:pass])
       @target_docker = DockerEndpoit.new(args[:target_url], args[:target_user], args[:target_pass])
       @images = []
-      @patch_only = false
+      @patch_only = args[:patch_only] || false
     end
 
     def self.open_with(args)
@@ -47,7 +47,6 @@ module RegistryUtils
       complete_took = Benchmark.measure do
         if patch_only?
           process_images = @images.select { |img| img.patched? }
-          # process_images = @images
           puts "Patch only `abracadabra` 🪄"
         else
           process_images = @images
@@ -146,9 +145,12 @@ module RegistryUtils
       puts "Loaded snapshot #{Paint[@snapshot_id, :green]}"
       @patch_snapshot_id = snap["patch_snapshot_id"]
       @patch_repositories = snap["patch_repositories"]
-      if @patch_snapshot_id && @patch_snapshot_id.size > 0
-        @patch_only = true
-      end
+
+      # now in @args!
+      # if @patch_snapshot_id && @patch_snapshot_id.size > 0
+      #   @patch_only = true
+      # end
+
       if snap.has_key? "images"
         snap["images"].each do |img|
           di = DockerImage.new(img["name"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"], img["patched"])
