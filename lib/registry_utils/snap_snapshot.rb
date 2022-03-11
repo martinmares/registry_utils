@@ -18,8 +18,8 @@ module RegistryUtils
       @images = []
     end
 
-    def add_image(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
-      new_img = SnapImage.new(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+    def add_image(name, rename_to, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+      new_img = SnapImage.new(name, rename_to, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
         @images << new_img
       new_img
     end
@@ -69,8 +69,9 @@ module RegistryUtils
   end
 
   class SnapImage
-    def initialize(name, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
+    def initialize(name, rename_to, save_as, tag, add_tags, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
+      @rename_to = rename_to
       @save_as = save_as
       @tag = tag
       @add_tags = add_tags
@@ -98,6 +99,7 @@ module RegistryUtils
     def to_ruby_obj
       result = Hash.new
       result["name"] = @name
+      result["rename_to"] = @rename_to if @rename_to
       result["took"] = @took if @took
       result["transferred"] = @transferred if @transferred
 

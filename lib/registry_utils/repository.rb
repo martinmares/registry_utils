@@ -2,11 +2,12 @@ module RegistryUtils
 
   class Repository
 
-    attr_accessor :id, :name, :created, :artifact_count, :artifacts
+    attr_accessor :id, :name, :rename_to, :created, :artifact_count, :artifacts
 
-    def initialize(id, name, created, artifact_count)
+    def initialize(id, name, rename_to, created, artifact_count)
       @id = id
       @name = name
+      @rename_to = rename_to
       @created = DateTime.parse(created)
       @artifact_count = artifact_count
       @artifacts = {}

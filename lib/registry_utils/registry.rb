@@ -118,7 +118,9 @@ module RegistryUtils
           config.each_bundles_with_index do |bundle, i|
             puts "  [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]} (project: #{Paint[bundle.project, :yellow]})"
             bundle.each_repos_with_index do |repo, i|
-              puts "       [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}, as_is: #{Paint[repo.keep_tag_as_is, :cyan]})"
+              rename_to = ", rename_to: #{Paint[repo.rename_to, :blue]}" if repo.rename_to
+              keep_tag_as_is = ", keep_tag_as_is: #{Paint[repo.keep_tag_as_is, :cyan]}" if repo.keep_tag_as_is
+              puts "       [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}#{rename_to}#{keep_tag_as_is})"
               api_repositories(bundle.project, repo.name)
               api_artifacts(bundle.project, repo.name)
               # print_artifacts(bundle.project, repo.name)
@@ -128,6 +130,7 @@ module RegistryUtils
                 puts "            => #{Paint[detected.digest, :green]}"
                 repo.detected(true)
                 repo.add_detected_digest(detected.digest)
+                repo.add_rename_to(repo.rename_to) if repo.rename_to
               else
                 msg = "There is no artifact with tag name \"#{repo.tag}\"!"
                 puts "            => #{Paint[msg, :red]}"
@@ -261,12 +264,14 @@ module RegistryUtils
       if body.is_a?(Array)
         body.each_with_index do |repository, i|
           repo_name = repository["name"].gsub("#{project_name}/", "")
-          repos[repo_name] = Repository.new(repository["id"], repo_name, repository["creation_time"], repository["artifact_count"])
+          repo_rename_to = repository["rename_to"]
+          repos[repo_name] = Repository.new(repository["id"], repo_name, repo_rename_to, repository["creation_time"], repository["artifact_count"])
         end
       elsif body.is_a?(Hash)
         repository = body
         repo_name = repository["name"].gsub("#{project_name}/", "")
-        repos[repo_name] = Repository.new(repository["id"], repo_name, repository["creation_time"], repository["artifact_count"])
+        repo_rename_to = repository["rename_to"]
+        repos[repo_name] = Repository.new(repository["id"], repo_name, repo_rename_to, repository["creation_time"], repository["artifact_count"])
       end
     end
 

@@ -98,7 +98,7 @@ module RegistryUtils
           new_bundle = SnapBundle.new(bundle["name"], bundle["project"])
           if bundle.has_key? "repositories"
             bundle["repositories"].each do |repository|
-              new_repository = SnapRepository.new(repository["name"], repository["tag"], repository["keep_tag_as_is"])
+              new_repository = SnapRepository.new(repository["name"], repository["rename_to"], repository["tag"], repository["keep_tag_as_is"])
               new_bundle.add_repository(new_repository)
             end
           end
@@ -162,7 +162,7 @@ module RegistryUtils
             end
           end
           uri = URI("#{repos.image_url}")
-          snapshot.add_image(repos.name.split("/").last, nil, repos.tag, [],
+          snapshot.add_image(repos.name.split("/").last, repos.rename_to, nil, repos.tag, [],
                              uri.host, uri.port, uri.scheme,
                              repos.project, repos.repository, digest, repos.detected?,
                              patched)
@@ -219,15 +219,16 @@ module RegistryUtils
     end
 
     def each_repos_with_index
-      @repositories.each_with_index { |repo,i | yield repo, i }
+      @repositories.each_with_index { |repo, i| yield repo, i }
     end
   end
 
   class SnapRepository
-    attr_reader :name, :tag, :keep_tag_as_is, :url, :project, :repository, :detected_digest, :transfer_tag
+    attr_reader :name, :rename_to, :tag, :keep_tag_as_is, :url, :project, :repository, :detected_digest, :transfer_tag
 
-    def initialize(name, tag, keep_tag_as_is)
+    def initialize(name, rename_to, tag, keep_tag_as_is)
       @name = name
+      @rename_to = rename_to
       @tag = tag
       @transfer_tag = nil
       @keep_tag_as_is = keep_tag_as_is
@@ -248,6 +249,10 @@ module RegistryUtils
 
     def add_transfer_tag(transfer_tag)
       @transfer_tag = transfer_tag
+    end
+
+    def add_rename_to(rename_to)
+      @rename_to = rename_to
     end
 
     def image_url

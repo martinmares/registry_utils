@@ -67,6 +67,7 @@ module RegistryUtils
             docker_auth(@docker) unless @dry_run
             # puts " 🪄 `patched` image ... `wingardium leviosa`" if img.patched?
             puts "  👈 #{pull_image}"
+            puts "  🙀 will be renamed to #{Paint[img.rename_to, :red]}"
 
             unless @dry_run
               if @pull_by == "tag"
@@ -75,7 +76,7 @@ module RegistryUtils
                 local_img = Docker::Image.create("fromImage" => img.docker_img_name)
               end
             end
-            remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name)
+            remote_img_name = DockerImage::generate_docker_img_name(@target_url, @target_project, img.name, img.rename_to)
             puts "  🎁 tag #{Paint[img.snapshot_id, :blue]}"
 
             docker_auth(@target_docker) unless @dry_run
@@ -92,9 +93,10 @@ module RegistryUtils
               @add_tag.each { |t| add_tags << t }
             end
 
-            uri = URI("#{@target_url}/#{@target_project}/#{img.name}")
+            real_img_name = img.rename_to || img.name
+            uri = URI("#{@target_url}/#{@target_project}/#{real_img_name}")
             snap.type = "transfer"
-            snap_img = snap.add_image(img.name, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+            snap_img = snap.add_image(real_img_name, nil, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
             print_result(push_result)
 
             if @add_tag
@@ -153,7 +155,7 @@ module RegistryUtils
 
       if snap.has_key? "images"
         snap["images"].each do |img|
-          di = DockerImage.new(img["name"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"], img["patched"])
+          di = DockerImage.new(img["name"], img["rename_to"], snap["snapshot_id"], img["tag"], img["host"], img["port"], img["scheme"], img["project"], img["repository"], img["digest"], img["detected"], img["patched"])
           @images << di
         end
       end
@@ -231,10 +233,11 @@ module RegistryUtils
   end
 
   class DockerImage
-    attr_accessor :name, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected, :patched
+    attr_accessor :name, :rename_to, :snapshot_id, :tag, :host, :port, :scheme, :project, :repository, :digest, :detected, :patched
 
-    def initialize(name, snapshot_id, tag, host, port, scheme, project, repository, digest, detected, patched)
+    def initialize(name, rename_to, snapshot_id, tag, host, port, scheme, project, repository, digest, detected, patched)
       @name = name
+      @rename_to = rename_to
       @snapshot_id = snapshot_id
       @tag = tag
       @host = host
@@ -255,8 +258,9 @@ module RegistryUtils
       "#{@host}:#{@port}/#{@project}/#{@repository}:#{@tag}"
     end
 
-    def self.generate_docker_img_name(url, project, name)
-      uri = URI("#{url}/#{project}/#{name}")
+    def self.generate_docker_img_name(url, project, name, rename_to)
+      new_name = rename_to || name
+      uri = URI("#{url}/#{project}/#{new_name}")
       "#{uri.host}:#{uri.port}#{uri.path}"
     end
 
