@@ -67,7 +67,7 @@ module RegistryUtils
             docker_auth(@docker) unless @dry_run
             # puts " 🪄 `patched` image ... `wingardium leviosa`" if img.patched?
             puts "  👈 #{pull_image}"
-            puts "  🙀 will be renamed to #{Paint[img.rename_to, :red]}"
+            puts "  🙀 will be renamed to #{Paint[img.rename_to, :red]}" if img.rename_to
 
             unless @dry_run
               if @pull_by == "tag"
