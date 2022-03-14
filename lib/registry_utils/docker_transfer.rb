@@ -268,7 +268,14 @@ module RegistryUtils
     def self.generate_docker_img_name(url, project, name, rename_to)
       new_name = rename_to || name
       uri = URI("#{url}/#{project}/#{new_name}")
-      "#{uri.host}:#{uri.port}#{uri.path}"
+      
+      if uri.scheme == "https" && uri.port == 443
+        "#{uri.host}#{uri.path}"
+      elsif uri.scheme == "http" && uri.port == 80
+        "#{uri.host}#{uri.path}"
+      else
+        "#{uri.host}:#{uri.port}#{uri.path}"
+      end
     end
 
     def patched?
