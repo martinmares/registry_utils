@@ -109,7 +109,14 @@ module RegistryUtils
               end
             end
 
-            local_img.remove(force: true) unless @dry_run
+            unless @dry_run
+              begin
+                local_img.remove()
+              rescue => exception
+                puts "  🌶️ exception: #{exception}"
+              end
+            end
+
             puts "\n"
           end
 
