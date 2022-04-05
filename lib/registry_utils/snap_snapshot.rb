@@ -118,7 +118,7 @@ module RegistryUtils
       result["port"] = @port
       result["scheme"] = @scheme
       result["project"] = @project
-      result["repository"] = @rename_to || @repository
+      result["repository"] = @repository
       result["digest"] = @digest
       result["detected"] = @detected if @detected
       result["patched"] = @patched if @patched

@@ -98,7 +98,7 @@ module RegistryUtils
             real_img_name = img.rename_to || img.name
             uri = URI("#{@target_url}/#{@target_project}/#{real_img_name}")
             snap.type = "transfer"
-            snap_img = snap.add_image(real_img_name, nil, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, img.name, target_sha_digest, nil, nil)
+            snap_img = snap.add_image(real_img_name, nil, @save_as, tag, add_tags, uri.host, uri.port, uri.scheme, @target_project, real_img_name, target_sha_digest, nil, nil)
             print_result(push_result)
 
             if @add_tag
