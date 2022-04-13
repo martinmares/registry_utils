@@ -341,10 +341,10 @@ module RegistryUtils
           else
             filtered_artifacts = artifacts
           end
-          if filtered_artifacts
-            puts "Repo with name: #{Paint[repository_name, :cyan]}"
-            puts "Number of artifacts: #{Paint[filtered_artifacts.size, :green]}"
-            puts "Search by tag: #{Paint[search_by_tag, :yellow]}" if search_by_tag
+          if filtered_artifacts && filtered_artifacts.size > 0
+            puts "Repo with name #{Paint[repository_name, :cyan]}"
+            puts "Found #{Paint[filtered_artifacts.size, :green]} artifacts"
+            puts "Search by tag #{Paint[search_by_tag, :yellow]}" if search_by_tag
             filtered_artifacts.each_with_index do |(id, artifact), i|
               unless search_by_tag
                 puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
