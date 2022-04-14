@@ -12,11 +12,11 @@ GEM
     docker-api (2.2.0)
       excon (>= 0.47.0)
       multi_json
-    excon (0.91.0)
+    excon (0.92.2)
     faraday (2.2.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
-    faraday-net_http (2.0.1)
+    faraday-net_http (2.0.2)
     fileutils (1.6.0)
     highline (2.0.3)
     multi_json (1.15.0)
@@ -41,4 +41,4 @@ DEPENDENCIES
   ruby-progressbar
 
 BUNDLED WITH
-   2.3.8
+   2.3.11
