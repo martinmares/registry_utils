@@ -261,7 +261,7 @@ module RegistryUtils
         end
         @projects[project_name].repositories = repos
       else
-        puts "Project with name #{Paint[project_name, :cyan]} does not exists!"
+        puts "Project with name #{Paint[project_name, :cyan]} does not exists!" unless @args[:lines_only]
       end
     end
 
@@ -283,10 +283,16 @@ module RegistryUtils
     def print_repositories(project_name, repository_name = nil)
       if @projects.has_key? project_name
         repos = @projects[project_name].repositories.sort_by { |(k, v)| v.id }
-        puts "Project with name: #{Paint[project_name, :cyan]}"
-        puts "Number of repositories: #{Paint[repos.size, :green]}"
-        repos.each_with_index do |(name, repo), i|
-          puts "[#{(i + 1).to_s.rjust(3, " ")}] #{repo}"
+        puts "Project with name: #{Paint[project_name, :cyan]}" unless @args[:lines_only]
+        puts "Number of repositories: #{Paint[repos.size, :green]}" unless @args[:lines_only]
+        if @args[:lines_only]
+          repos.each_with_index do |(name, repo), i|
+            puts "#{name}"
+          end
+        else
+          repos.each_with_index do |(name, repo), i|
+            puts "[#{(i + 1).to_s.rjust(3, " ")}] #{repo}"
+          end
         end
       end
     end
