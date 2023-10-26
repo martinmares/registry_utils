@@ -1,31 +1,35 @@
 GIT
   remote: https://github.com/flori/json
-  revision: 75ada77b9664c1d1f0ae6e210f8db4919849561e
+  revision: 94d9c899557b52bbb0229643d3423bd0d0544b3e
   specs:
-    json (2.6.1)
+    json (2.6.3)
 
 GEM
   remote: https://rubygems.org/
   specs:
     awesome_print (1.9.2)
+    base64 (0.1.1)
     coderay (1.1.3)
     docker-api (2.2.0)
       excon (>= 0.47.0)
       multi_json
-    excon (0.92.2)
-    faraday (2.2.0)
-      faraday-net_http (~> 2.0)
+    excon (0.104.0)
+    faraday (2.7.11)
+      base64
+      faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
-    faraday-net_http (2.0.2)
-    fileutils (1.6.0)
-    highline (2.0.3)
+    faraday-net_http (3.0.2)
+    fileutils (1.7.1)
+    highline (2.1.0)
     multi_json (1.15.0)
-    optimist (3.0.1)
-    paint (2.2.1)
-    ruby-progressbar (1.11.0)
+    optimist (3.1.0)
+    paint (2.3.0)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
 
 PLATFORMS
+  arm64-darwin-21
+  arm64-darwin-22
   x86_64-darwin-21
 
 DEPENDENCIES
@@ -41,4 +45,4 @@ DEPENDENCIES
   ruby-progressbar
 
 BUNDLED WITH
-   2.3.11
+   2.4.18
