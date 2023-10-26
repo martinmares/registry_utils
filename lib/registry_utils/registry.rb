@@ -1,5 +1,4 @@
 module RegistryUtils
-
   require "awesome_print"
   require "paint"
   require "highline/import"
@@ -13,14 +12,14 @@ module RegistryUtils
   require_relative "docker_transfer"
 
   PAGE_SIZE = 10
-  class Registry
 
+  class Registry
     attr_reader :projects
 
     def initialize(args)
       @args = args
       @url = @args[:url]
-      @client = RegistryUtils::Client.new(@url, @args[:user], @args[:pass])
+      @client = RegistryUtils::Client.new(@url, @args[:user], @args[:pass], @args[:lines_only])
       @project_name = @args[:project]
       @repository_name = @args[:repository]
       @keep_last_n = @args[:keep_last_n]
@@ -81,7 +80,7 @@ module RegistryUtils
         api_repositories(@project_name, @repository_name)
         if Utils::blank? @repository_name
           confirm = ask("No repository is defined, so it must be explicitly acknowledged.\nThe delete operation applies to all repositories in the project!.\nDo you really want to run it? [Y/N] ") { |yn| yn.limit = 1, yn.validate = /[yn]/i }
-          if confirm.downcase[0] == 'y'
+          if confirm.downcase[0] == "y"
             @projects[@project_name].repositories.each do |name, repo|
               api_artifacts(@project_name, repo.name)
               api_cleanup(@project_name, repo.name)
@@ -103,7 +102,7 @@ module RegistryUtils
           if @projects.has_key?(@project_name)
             @projects[@project_name].repositories.each do |(repo_name, _data)|
               api_artifacts(@project_name, repo_name)
-              print_artifacts(@project_name, repo_name)  
+              print_artifacts(@project_name, repo_name)
             end
           end
         end
@@ -116,11 +115,11 @@ module RegistryUtils
           puts "Bundles:"
           completed = true
           config.each_bundles_with_index do |bundle, i|
-            puts "  [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{Paint[bundle.name, :magenta]} (project: #{Paint[bundle.project, :yellow]})"
+            puts "  [#{Paint[(i + 1).to_s.rjust(2, " "), :green]}] #{Paint[bundle.name, :magenta]} (project: #{Paint[bundle.project, :yellow]})"
             bundle.each_repos_with_index do |repo, i|
               rename_to = ", rename_to: #{Paint[repo.rename_to, :blue]}" if repo.rename_to
               keep_tag_as_is = ", keep_tag_as_is: #{Paint[repo.keep_tag_as_is, :cyan]}" if repo.keep_tag_as_is
-              puts "       [#{Paint[(i+1).to_s.rjust(2, ' '), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}#{rename_to}#{keep_tag_as_is})"
+              puts "       [#{Paint[(i + 1).to_s.rjust(2, " "), :green]}] #{repo.name} (tag: #{Paint[repo.tag, :blue]}#{rename_to}#{keep_tag_as_is})"
               api_repositories(bundle.project, repo.name)
               api_artifacts(bundle.project, repo.name)
               # print_artifacts(bundle.project, repo.name)
@@ -221,10 +220,16 @@ module RegistryUtils
     end
 
     def print_projects
-      puts "Number of projects: #{Paint[@projects.size, :green]}"
-      projects = @projects.sort_by { |(k, v)| v.id }
-      projects.each_with_index do |(name, project), i|
-        puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{project}"
+      if @args[:lines_only]
+        projects.each_with_index do |(name, project), i|
+          puts "#{name}"
+        end
+      else
+        puts "Number of projects: #{Paint[@projects.size, :green]}"
+        projects = @projects.sort_by { |(k, v)| v.id }
+        projects.each_with_index do |(name, project), i|
+          puts "[#{(i + 1).to_s.rjust(3, " ")}] #{project}"
+        end
       end
     end
 
@@ -281,7 +286,7 @@ module RegistryUtils
         puts "Project with name: #{Paint[project_name, :cyan]}"
         puts "Number of repositories: #{Paint[repos.size, :green]}"
         repos.each_with_index do |(name, repo), i|
-          puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{repo}"
+          puts "[#{(i + 1).to_s.rjust(3, " ")}] #{repo}"
         end
       end
     end
@@ -289,12 +294,10 @@ module RegistryUtils
     def api_artifacts(project_name, repository_name)
       artifacts = {}
       if @projects.has_key? project_name
-
         project = @projects[project_name]
         repos = project.repositories
 
         if repos.has_key? repository_name
-
           response = @client.get(list_of_artifacts_endpoint(project_name, repository_name), { page_size: PAGE_SIZE, with_tag: true, with_signatures: true })
           status, body = Utils::parse_response(response)
           if @client.ok?(status)
@@ -312,7 +315,6 @@ module RegistryUtils
           end
 
           repos[repository_name].artifacts = artifacts
-
         else
           puts "Repo with name #{Paint[repository_name, :cyan]} not found!"
         end
@@ -329,7 +331,6 @@ module RegistryUtils
 
     def print_artifacts(project_name, repository_name)
       if @projects.has_key? project_name
-
         project = @projects[project_name]
         repos = project.repositories
 
@@ -347,9 +348,9 @@ module RegistryUtils
             puts "Search by tag #{Paint[search_by_tag, :yellow]}" if search_by_tag
             filtered_artifacts.each_with_index do |(id, artifact), i|
               unless search_by_tag
-                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact}"
+                puts "[#{(i + 1).to_s.rjust(3, " ")}] #{artifact}"
               else
-                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{artifact.to_s_higlight(search_by_tag)}"
+                puts "[#{(i + 1).to_s.rjust(3, " ")}] #{artifact.to_s_higlight(search_by_tag)}"
               end
             end
           end
@@ -359,7 +360,6 @@ module RegistryUtils
 
     def detect_artifact_with_tag(project_name, repository_name, tag_name)
       if @projects.has_key? project_name
-
         project = @projects[project_name]
         repos = project.repositories
 
@@ -375,7 +375,6 @@ module RegistryUtils
 
     def api_cleanup(project_name, repository_name)
       if @projects.has_key? project_name
-
         project = @projects[project_name]
         repos = project.repositories
 
@@ -392,10 +391,10 @@ module RegistryUtils
 
           artifacts.each_with_index do |(id, artifact), i|
             if keep.has_key?(id)
-              puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["KEEP  ", :green]} #{artifact}"
+              puts "[#{(i + 1).to_s.rjust(3, " ")}] #{Paint["KEEP  ", :green]} #{artifact}"
             else
               unless @args[:dry_run]
-                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE", :red]} #{artifact}"
+                puts "[#{(i + 1).to_s.rjust(3, " ")}] #{Paint["DELETE", :red]} #{artifact}"
                 response = @client.delete(delete_artifact(project_name, repository_name, artifact.digest))
                 if @client.ok?(response.status)
                   puts "      => artifact #{Paint[artifact.digest, :green]} successfully deleted!"
@@ -403,15 +402,12 @@ module RegistryUtils
                   puts "Something wrong (api_cleanup) => status: #{response.status}, body: #{response.body}"
                 end
               else
-                puts "[#{(i + 1).to_s.rjust(3, ' ')}] #{Paint["DELETE!", :magenta]} #{artifact} #{Paint['(dry run only)!', :yellow]}"
+                puts "[#{(i + 1).to_s.rjust(3, " ")}] #{Paint["DELETE!", :magenta]} #{artifact} #{Paint["(dry run only)!", :yellow]}"
               end
             end
           end
         end
       end
-
     end
-
   end
-
 end

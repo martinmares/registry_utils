@@ -1,6 +1,5 @@
 module RegistryUtils
   class Main
-
     attr_reader :args, :command
 
     require "optimist"
@@ -21,7 +20,7 @@ module RegistryUtils
     def initialize()
       @command, @global_args, @args = parse_args()
       @registry = Registry.new(@args)
-      puts "Running command #{Paint[@command, :yellow]} ..."
+      puts "Running command #{Paint[@command, :yellow]} ..." unless @args[:lines_only]
     end
 
     def health
@@ -86,13 +85,14 @@ module RegistryUtils
       subcommand = ARGV.shift
 
       basic_opts = [
-        { name: :url, desc: "Registry URL", opts: {type: :string, required: true, short: "-l"} },
-        { name: :user, desc: "User name", opts: {type: :string, required: true, short: "-u"} },
-        { name: :pass, desc: "Password", opts: {type: :string, required: true, short: "-e"} }
+        { name: :url, desc: "Registry URL", opts: { type: :string, required: true, short: "-l" } },
+        { name: :user, desc: "User name", opts: { type: :string, required: true, short: "-u" } },
+        { name: :pass, desc: "Password", opts: { type: :string, required: true, short: "-e" } },
+        { name: :lines_only, desc: "Simple lines (text only) output", opts: { type: :boolean, required: false, default: false, short: "-i" } },
       ]
 
       opts = case subcommand
-        when "cleanup"
+        when CMD_CLEANUP
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
@@ -100,35 +100,35 @@ module RegistryUtils
             opt :keep_last_n, "Keep last `n` of images", type: :integer, required: true, short: "-k"
             opt :dry_run, "Dry run? (fake only)", type: :boolean, default: false, required: false, short: "-f"
           end
-        when "projects"
+        when CMD_PROJECTS
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
           end
-        when "repositories"
+        when CMD_REPOSITORIES
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
           end
-        when "artifacts"
+        when CMD_ARTIFACTS
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :project, "Project name", type: :string, required: true, short: "-p"
             opt :repository, "Repository name", type: :string, required: false, short: "-r"
             opt :search_by_tag, "Search by 'tag'", type: :string, required: false, short: "-g"
           end
-        when "health"
+        when CMD_HEALTH
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
           end
-        when "snapshot"
+        when CMD_SNAPSHOT
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :bundle, "Bundle name (must be located here: `conf/bundle.{bundle-name}.yml`)", type: :string, required: true, short: "-b"
             opt :patch_snapshot_id, "Patch snapshot ID (contains images with sha256 digests)", type: :string, required: false, short: "-s"
             opt :patch_repository, "Patch only repository, can be #{Paint["multi", :green]} -p image1 -p image2", type: :string, require: false, short: "-p"
           end
-        when "transfer"
+        when CMD_TRANSFER
           Optimist::options do
             basic_opts.each { |e| opt e[:name], e[:desc], e[:opts] }
             opt :bundle, "Bundle name", type: :string, required: true, short: "-b"
@@ -149,10 +149,7 @@ module RegistryUtils
           Optimist::die "unknown subcommand #{subcommand.inspect}"
         end
 
-        [subcommand, global_opts, opts]
-
+      [subcommand, global_opts, opts]
     end
-
   end
-
 end
